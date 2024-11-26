@@ -62,28 +62,6 @@ class EventController extends Controller
             Event::validate($data);
             $event = Event::withTrashed()->create($data);
 
-            if ($event->id && $request->has('registrants') && !empty($request->registrants)) {
-                $registrants = $request->registrants;
-                $data = [
-                    'event_id' => $event->id,
-                    'title' => $registrants->title,
-                    'name' => $registrants->name,
-                    'email' => $registrants->email,
-                    'company' => $registrants->company,
-                    'company_address' => $registrants->company_address,
-                    'position' => $registrants->position,
-                    'affiliation' => $registrants->affiliation,
-                    'contact_number' => $registrants->contact_number,
-                    'score' => $registrants->score,
-                    'is_agree_privacy' => $registrants->is_agree_privacy,
-                    'gender' => $registrants->gender
-                ];
-                Registrant::validate($data);
-
-                $event = Event::withTrashed()->create($data);
-
-            }
-
             DB::commit();
 
             return response()->json([
@@ -141,9 +119,40 @@ class EventController extends Controller
                 'status' => $this->determineStatus($request->date),
             ];
             Event::validate($data);
+
+            $registrantData = [];
+            if ($request->has('registrants') && !empty($request->registrants)) {
+                $registrants = $request->registrants;
+
+                foreach ($registrants as $registrant) {
+                    $data = [
+                        'id' => $registrant['id'] ?? null,
+                        'event_id' => $id,
+                        'title' => $registrant['title'],
+                        'name' => $registrant['name'],
+                        'email' => $registrant['email'],
+                        'gender' => $registrant['gender'],
+                        'company' => $registrant['company'],
+                        'company_address' => $registrant['company_address'],
+                        'position' => $registrant['position'],
+                        'affiliation' => $registrant['affiliation'],
+                        'contact_number' => $registrant['contact_number'],
+                        'score' => $registrant['score'],
+                        'is_agree_privacy' => $registrant['is_agree_privacy'],
+                        'is_attended' => $registrant['is_attended']
+                    ];
+                    Registrant::validate($data);
+                    $registrantData[] = Registrant::updateOrCreate(['id' => $registrant['id']], $data);
+                }
+            }
             
             $event->update($data);
-            $data = $event->fresh();
+            
+            $data = [
+                'event' => $event->fresh(),
+                'registrant' => $registrantData,
+            ];
+
 
             DB::commit();
 
@@ -167,6 +176,29 @@ class EventController extends Controller
                 'details' => $e->getMessage(),
             ], 422);
         }
+    }
+
+    public function showEvent($id)
+    {
+        $event = Event::find($id);
+
+        if (!$event) {
+            throw new \Exception("No existing event.");
+        }
+
+        $registrants = Registrant::where('event_id', $id)->get();
+        
+        $data = [
+            'event' => $event->fresh(),
+            'registrant' => $registrants ?? null,
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+            'message' => "Event details successfully retrieved",
+        ]);
+
     }
 
     public function destroy($id)
