@@ -53,6 +53,7 @@ const Registrants = () => {
                             <TableCell>ID</TableCell>
                             <TableCell>Name</TableCell>
                             <TableCell>Email</TableCell>
+                            <TableCell>QR Code</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -61,6 +62,7 @@ const Registrants = () => {
                                 <TableCell>{registrant.id}</TableCell>
                                 <TableCell>{registrant.name}</TableCell>
                                 <TableCell>{registrant.email}</TableCell>
+                                <TableCell></TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
