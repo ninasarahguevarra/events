@@ -22,8 +22,6 @@ const EventList = () => {
         description: "",
         location: "",
         date: "", // "2024-11-25T19:00:00.000Z"
-        status: true,
-        image: "",
     });
 
     const handleChange = (event) => {
@@ -31,15 +29,10 @@ const EventList = () => {
     };
 
     const handleDateChange = (newDate) => {
+        console.log("date ", newDate);
+        // "2024-10-31T16:00:00.000Z"
+        
         setEventData({ ...eventData, date: newDate });
-    };
-
-    const handleTimeChange = (newTime) => {
-        setEventData({ ...eventData, time: newTime });
-    };
-
-    const handleStatusChange = (event) => {
-        setEventData({ ...eventData, status: event.target.checked });
     };
 
     const handleSubmit = (event) => {
@@ -51,9 +44,6 @@ const EventList = () => {
             description: "",
             location: "",
             date: null,
-            time: null,
-            status: true,
-            image: "",
         });
         setShowForm(false); // Hide form after submission
     };
@@ -69,8 +59,6 @@ const EventList = () => {
                     eventData={eventData}
                     handleChange={handleChange}
                     handleDateChange={handleDateChange}
-                    handleTimeChange={handleTimeChange}
-                    handleStatusChange={handleStatusChange}
                     handleSubmit={handleSubmit}
                 />
             ) : (
@@ -118,8 +106,6 @@ const EventForm = ({
     eventData,
     handleChange,
     handleDateChange,
-    handleTimeChange,
-    handleStatusChange,
     handleSubmit,
 }) => (
     <Box
@@ -198,15 +184,6 @@ const EventForm = ({
                 size="small"
                 sx={{ mb: 2 }}
             /> */}
-            <FormControlLabel
-                control={
-                    <Checkbox
-                        checked={eventData.status}
-                        onChange={handleStatusChange}
-                    />
-                }
-                label="Active"
-            />
             <Button
                 fullWidth
                 variant="contained"

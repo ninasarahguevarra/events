@@ -117,7 +117,10 @@ class UserSeeder extends Seeder
 
         foreach ($data as $user) {
             User::firstOrCreate(
-                ['id' => $user['id']],
+                [
+                    'email' => $user['email'],
+                    'company' => $user['company']
+                ],
                 $user
             );
         }

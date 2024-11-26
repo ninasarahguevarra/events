@@ -3,7 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Models\Registrant;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class EventController extends Controller
@@ -45,26 +49,124 @@ class EventController extends Controller
 
     public function saveEvent(Request $request)
     {
+        DB::beginTransaction();
+        try {
+            $data = [
+                'name' => $request->name,
+                'description' => $request->description,
+                'location' => $request->location,
+                'date' => $request->date,
+                'status' => $this->determineStatus($request->date),
+            ];
+            
+            Event::validate($data);
+            $event = Event::withTrashed()->create($data);
 
-        $data = [
-            'name' => $request->name,
-            'description' => $request->description,
-            'location' => $request->location,
-            'date' => $request->date,
-            'time' => $request->time,
-            'status' => $request->status ?? 'active'
-        ];
-        $event = Event::create($data);
+            if ($event->id && $request->has('registrants') && !empty($request->registrants)) {
+                $registrants = $request->registrants;
+                $data = [
+                    'event_id' => $event->id,
+                    'title' => $registrants->title,
+                    'name' => $registrants->name,
+                    'email' => $registrants->email,
+                    'company' => $registrants->company,
+                    'company_address' => $registrants->company_address,
+                    'position' => $registrants->position,
+                    'affiliation' => $registrants->affiliation,
+                    'contact_number' => $registrants->contact_number,
+                    'score' => $registrants->score,
+                    'is_agree_privacy' => $registrants->is_agree_privacy,
+                    'gender' => $registrants->gender
+                ];
+                Registrant::validate($data);
 
-        return response()->json([
-            'message' => "test",
-            'data' => $data
-        ]);
+                $event = Event::withTrashed()->create($data);
+
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'data' => $event,
+                'message' => "Events successfully saved!",
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Error saving event details: ' . $e->getMessage(), [
+                'exception' => $e,
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'An error occurred while saving event details.',
+                'details' => $e->getMessage(),
+            ], 422);
+        }
     }
 
-    public function updateEvent($id)
-    {
+    private function determineStatus($requestDate) {
+        $requestDate = Carbon::parse($requestDate);
+        $now = Carbon::now('Asia/Manila');
+    
+        $diffInDays = $now->diffInDays($requestDate);
+        if ($diffInDays > 1) {
+            return 'Pending';
+        } else if ($diffInDays < 1 && $diffInDays > 0) {
+            return 'In Progress';
+        } else {
+            return 'Completed';
+        }
+    }
 
+    public function updateEvent(Request $request, $id)
+    {
+        DB::beginTransaction();
+        try {
+            $event = Event::find($id);
+
+            if (!$event) {
+                throw new \Exception("No existing event.");
+            }
+
+            $data = [
+                'name' => $request->name,
+                'description' => $request->description,
+                'location' => $request->location,
+                'date' => $request->date,
+                'status' => $this->determineStatus($request->date),
+            ];
+            Event::validate($data);
+            
+            $event->update($data);
+            $data = $event->fresh();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+                'message' => "Events successfully updated!",
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Error updating event details: ' . $e->getMessage(), [
+                'exception' => $e,
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'An error occurred while updating event details.',
+                'details' => $e->getMessage(),
+            ], 422);
+        }
     }
 
     public function destroy($id)

@@ -18,9 +18,7 @@ class Event extends Model
         'description', 
         'location', 
         'date',
-        'time',
         'status',
-        'image',
         'deleted_at'
     ];
 
@@ -29,9 +27,7 @@ class Event extends Model
         'description' => 'string', 
         'location' => 'string',  
         'date' => 'datetime', 
-        'time' => 'datetime', 
         'status' => 'string', 
-        'image' => 'string',
         'deleted_at' => 'date', 
     ];
 
@@ -40,9 +36,7 @@ class Event extends Model
         'description' => 'nullable|string',
         'location' => 'nullable|string',
         'date' => 'required|date',
-        'time' => 'nullable|date',
-        'status' => 'string',
-        'image' => 'nullable|string',
+        'status' => 'required|string',
         'deleted_at' => 'nullable|date',
     ];
 
@@ -61,5 +55,10 @@ class Event extends Model
     public function attendees()
     {
         return $this->hasMany(Attendee::class);
+    }
+
+    public function registrant()
+    {
+        return $this->hasMany(Registrant::class);
     }
 }

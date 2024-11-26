@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AttendeeController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\RegistrantController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -11,6 +12,10 @@ Route::middleware('auth:api')->group(function () {
 });
 Route::prefix('users')->group(function () {
     Route::get('/', [UserController::class, 'index']);
+});
+
+Route::prefix('registrants')->group(function () {
+    Route::get('/', [RegistrantController::class, 'index']);
 });
 
 Route::prefix('events')->group(function () {
