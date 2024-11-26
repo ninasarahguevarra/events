@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->uuid('id')->change();
-            $table->string('email')->change();
+            $table->string('email')->unique(false)->change();
             $table->string('company')->nullable()->change();
             $table->string('company_address')->nullable()->after('company');
             $table->dropColumn(['birthdate']);
