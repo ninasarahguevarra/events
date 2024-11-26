@@ -23,7 +23,7 @@ const Registrants = () => {
             try {
                 const apiUrl = import.meta.env.VITE_API_URL;
                 const response = await axios.get(
-                    `${apiUrl}/api/users?page=${page + 1}&per_page=${rowsPerPage}`
+                    `${apiUrl}/api/registrants?page=${page + 1}&per_page=${rowsPerPage}`
                 );
                 const { data } = response.data;
                 setRegistrants(data.data);
