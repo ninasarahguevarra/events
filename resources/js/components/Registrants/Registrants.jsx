@@ -21,8 +21,9 @@ const Registrants = () => {
         // Fetch registrants data whenever page or rowsPerPage changes
         const fetchRegistrants = async () => {
             try {
+                const apiUrl = import.meta.env.VITE_API_URL;
                 const response = await axios.get(
-                    `http://127.0.0.1:8000/api/users?page=${page + 1}&per_page=${rowsPerPage}`
+                    `${apiUrl}/api/users?page=${page + 1}&per_page=${rowsPerPage}`
                 );
                 const { data } = response.data;
                 setRegistrants(data.data);
