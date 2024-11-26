@@ -93,9 +93,9 @@ class EventController extends Controller
     
         $diffInDays = $now->diffInDays($requestDate);
         if ($diffInDays > 1) {
-            return 'Pending';
+            return 'Upcoming';
         } else if ($diffInDays < 1 && $diffInDays > 0) {
-            return 'In Progress';
+            return 'Ongoing';
         } else {
             return 'Completed';
         }
@@ -111,23 +111,23 @@ class EventController extends Controller
                 throw new \Exception("No existing event.");
             }
 
-            $data = [
+            $eventData = [
                 'name' => $request->name,
                 'description' => $request->description,
                 'location' => $request->location,
                 'date' => $request->date,
                 'status' => $this->determineStatus($request->date),
             ];
-            Event::validate($data);
+            Event::validate($eventData);
 
             $registrantData = [];
             if ($request->has('registrants') && !empty($request->registrants)) {
                 $registrants = $request->registrants;
 
                 foreach ($registrants as $registrant) {
-                    $data = [
+                    $list = [
                         'id' => $registrant['id'] ?? null,
-                        'event_id' => null,
+                        'event_id' => $id,
                         'title' => $registrant['title'],
                         'name' => $registrant['name'],
                         'email' => $registrant['email'],
@@ -141,18 +141,17 @@ class EventController extends Controller
                         'is_agree_privacy' => $registrant['is_agree_privacy'],
                         'is_attended' => $registrant['is_attended']
                     ];
-                    Registrant::validate($data);
-                    $registrantData[] = Registrant::updateOrCreate(['id' => $registrant['id']], $data);
+                    Registrant::validate($list);
+                    $registrantData[] = Registrant::updateOrCreate(['id' => $registrant['id']], $list);
                 }
             }
             
-            $event->update($data);
-            
+            $event->update($eventData);
+
             $data = [
                 'event' => $event->fresh(),
                 'registrant' => $registrantData,
             ];
-
 
             DB::commit();
 
@@ -173,6 +172,53 @@ class EventController extends Controller
 
             return response()->json([
                 'error' => 'An error occurred while updating event details.',
+                'details' => $e->getMessage(),
+            ], 422);
+        }
+    }
+
+    public function setEventAttendees(Request $request, $id) {
+        DB::beginTransaction();
+        try {
+            $event = Event::find($id);
+
+            if (!$event) {
+                throw new \Exception("No existing event.");
+            }
+
+            $registrant = Registrant::where('id', $request->uuid)->first();
+
+            if (!$registrant) {
+                throw new \Exception("No existing registrant.");
+            }
+
+            $list = [
+                'id' => $registrant['id'],
+                'event_id' => $id,
+                'is_attended' => $request->is_attended
+            ];
+
+            $registrant->update($list);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'data' => $registrant->fresh(),
+                'message' => "Registrant successfully tagged as attendee.",
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Error setting attendee: ' . $e->getMessage(), [
+                'exception' => $e,
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'An error occurred while setting attendee.',
                 'details' => $e->getMessage(),
             ], 422);
         }

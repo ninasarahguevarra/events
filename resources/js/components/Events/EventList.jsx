@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 import {
     Paper,
     Table,
@@ -13,7 +13,12 @@ import {
     Typography,
     IconButton,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
+// import EditIcon from "@mui/icons-material/Edit";
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -23,6 +28,9 @@ const EventList = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [totalRows, setTotalRows] = useState(0);
     const navigate = useNavigate(); // Initialize useNavigate
+
+    dayjs.extend(utc);
+    dayjs.extend(timezone);
 
     // Fetch events from the API
     const fetchEvents = async () => {
@@ -49,7 +57,6 @@ const EventList = () => {
     };
 
     const handleEditClick = (eventId) => {
-        // Navigate to the edit page for the specific event
         navigate(`/events/${eventId}`);
     };
 
@@ -67,6 +74,7 @@ const EventList = () => {
                             <TableCell>Description</TableCell>
                             <TableCell>Date</TableCell>
                             <TableCell>Location</TableCell>
+                            <TableCell>Status</TableCell>
                             <TableCell>Action</TableCell>
                         </TableRow>
                     </TableHead>
@@ -75,14 +83,15 @@ const EventList = () => {
                             <TableRow key={event.id}>
                                 <TableCell>{event.name}</TableCell>
                                 <TableCell>{event.description}</TableCell>
-                                <TableCell>{event.date}</TableCell>
+                                <TableCell>{dayjs(event.date).tz('Asia/Manila').format('YYYY-MM-DD h:mm A')}</TableCell>
                                 <TableCell>{event.location}</TableCell>
+                                <TableCell>{event.status}</TableCell>
                                 <TableCell>
                                     <IconButton
                                         aria-label="edit"
-                                        onClick={() => handleEditClick(event.id)} // Pass event ID to the handler
+                                        onClick={() => handleEditClick(event.id)}
                                     >
-                                        <EditIcon />
+                                        <VisibilityIcon />
                                     </IconButton>
                                 </TableCell>
                             </TableRow>
