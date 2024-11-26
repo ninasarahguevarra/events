@@ -21,15 +21,17 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
+        'title',
         'name',
         'email',
+        'company',
         'gender',
         'birthdate',
-        'street_address',
-        'city',
-        'zip_code',
-        'country',
-        'mobile',
+        // 'street_address',
+        // 'city',
+        // 'zip_code',
+        // 'country',
+        // 'mobile',
         'password',
     ];
 
@@ -51,30 +53,34 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
+            'title' => 'string',
             'name' => 'string',
             'email' => 'string',
+            'company' => 'string',
             'gender' => 'string',
             'birthdate' => 'string',
-            'street_address' => 'string',
-            'city' => 'string',
-            'zip_code' => 'string',
-            'country' => 'string',
-            'mobile' => 'string',
+            // 'street_address' => 'string',
+            // 'city' => 'string',
+            // 'zip_code' => 'string',
+            // 'country' => 'string',
+            // 'mobile' => 'string',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
 
     public static array $rules = [
+        'title' => 'nullable|string',
         'name' => 'required|string',
         'email' => 'required|string',
-        'gender' => 'required|string',
-        'birthdate' => 'required|string',
-        'street_address' => 'nullable|string',
-        'city' => 'nullable|string',
-        'zip_code' => 'nullable|string',
-        'country' => 'nullable|string',
-        'mobile' => 'nullable|string',
+        'company' => 'nullable|string',
+        'gender' => 'nullable|string',
+        'birthdate' => 'nullable|string',
+        // 'street_address' => 'nullable|string',
+        // 'city' => 'nullable|string',
+        // 'zip_code' => 'nullable|string',
+        // 'country' => 'nullable|string',
+        // 'mobile' => 'nullable|string',
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
