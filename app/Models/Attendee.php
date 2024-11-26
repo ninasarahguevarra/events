@@ -14,12 +14,12 @@ class Attendee extends Model
 
     protected $casts = [
         'event_id' => 'integer',
-        'user_id' => 'integer',
+        'user_id' => 'string',
     ];
 
     public static array $rules = [
         'event_id' => 'required|integer',
-        'user_id' => 'required|integer',
+        'user_id' => 'required|string',
     ];
 
     public static function validate(array $data)
