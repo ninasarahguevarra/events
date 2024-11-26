@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::table('attendees', function (Blueprint $table) {
+            $table->dropForeign(['user_id']);
+        });
+        
         Schema::table('users', function (Blueprint $table) {
             $table->uuid('id')->change();
             $table->string('email')->unique(false)->change();
@@ -25,7 +29,8 @@ return new class extends Migration
         });
 
         Schema::table('attendees', function (Blueprint $table) {
-            $table->uuid('user_id')->constrained('users')->onDelete('cascade')->change();
+            $table->uuid('user_id')->change();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 
@@ -34,6 +39,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('attendees', function (Blueprint $table) {
+            $table->dropForeign(['user_id']);
+        });
+
         Schema::table('users', function (Blueprint $table) {
             $$table->id();
             $table->string('email')->unique()->change();
@@ -48,7 +57,8 @@ return new class extends Migration
         });
 
         Schema::table('attendees', function (Blueprint $table) {
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade')->change();
+            $table->unsignedBigInteger('user_id')->change();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 };
