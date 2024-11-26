@@ -43,7 +43,26 @@ class EventController extends Controller
         ], 200);
     }
 
-    public function update($id)
+    public function saveEvent(Request $request)
+    {
+
+        $data = [
+            'name' => $request->name,
+            'description' => $request->description,
+            'location' => $request->location,
+            'date' => $request->date,
+            'time' => $request->time,
+            'status' => $request->status ?? 'active'
+        ];
+        $event = Event::create($data);
+
+        return response()->json([
+            'message' => "test",
+            'data' => $data
+        ]);
+    }
+
+    public function updateEvent($id)
     {
 
     }

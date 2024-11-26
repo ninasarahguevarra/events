@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     Box,
     Typography,
@@ -8,9 +8,8 @@ import {
     Checkbox,
 } from "@mui/material";
 import {
-    DatePicker,
+    DateTimePicker,
     LocalizationProvider,
-    TimePicker,
 } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
@@ -21,8 +20,7 @@ const EventList = () => {
         name: "",
         description: "",
         location: "",
-        date: null,
-        time: null,
+        date: "", // "2024-11-25T19:00:00.000Z"
         status: true,
         image: "",
     });
@@ -182,19 +180,10 @@ const EventForm = ({
                         alignItems: "center",
                     }}
                 >
-                    <DatePicker
+                    <DateTimePicker
                         label="Date"
                         value={eventData.date}
                         onChange={handleDateChange}
-                        slotProps={{ textField: { variant: 'outlined'} }}
-                        sx={{ mb: 2 }}
-                    />
-                    <TimePicker
-                        label="Time"
-                        value={eventData.time}
-                        onChange={handleTimeChange}
-                        slotProps={{ textField: { variant: 'outlined' } }}
-                        sx={{ mb: 2 }}
                     />
                 </Box>
             </LocalizationProvider>
