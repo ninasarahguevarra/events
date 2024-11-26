@@ -127,7 +127,7 @@ class EventController extends Controller
                 foreach ($registrants as $registrant) {
                     $data = [
                         'id' => $registrant['id'] ?? null,
-                        'event_id' => $id,
+                        'event_id' => null,
                         'title' => $registrant['title'],
                         'name' => $registrant['name'],
                         'email' => $registrant['email'],

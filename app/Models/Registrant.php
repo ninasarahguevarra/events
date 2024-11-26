@@ -63,7 +63,7 @@ class Registrant extends Model
     }
 
     public static array $rules = [
-        'event_id' => 'required|integer',
+        'event_id' => 'nullable|integer',
         'title' => 'required|string',
         'name' => 'required|string',
         'email' => 'required|string',
