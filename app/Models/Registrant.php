@@ -40,6 +40,7 @@ class Registrant extends Model
         'contact_number',
         'score',
         'is_agree_privacy',
+        'is_attended',
     ];
 
     protected function casts(): array
@@ -57,6 +58,7 @@ class Registrant extends Model
             'contact_number' => 'string',
             'score' => 'integer',
             'is_agree_privacy' => 'boolean',
+            'is_attended' => 'boolean',
         ];
     }
 
@@ -73,6 +75,7 @@ class Registrant extends Model
         'contact_number' => 'required|string',
         'score' => 'nullable|integer',
         'is_agree_privacy' => 'required|boolean',
+        'is_attended' => 'required|boolean',
     ];
 
     public static function validate(array $data)
