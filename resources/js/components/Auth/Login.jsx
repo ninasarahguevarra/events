@@ -16,7 +16,7 @@ const Login = () => (
         <Typography variant="h4" sx={{ mb: 3 }}>
             Login
         </Typography>
-        <Box sx={{ width: '300px' }}>
+        <Box sx={{ width: '450px' }}>
             <TextField fullWidth label="Email" variant="outlined" size="small" sx={{ mb: 2 }} />
             <TextField fullWidth label="Password" variant="outlined" size="small" type="password" sx={{ mb: 2 }} />
             <Button fullWidth variant="contained" color="primary" sx={{ mb: 2 }}>

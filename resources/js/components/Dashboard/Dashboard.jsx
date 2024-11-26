@@ -2,7 +2,7 @@ import React from 'react';
 import { Box } from '@mui/material';
 import Sidebar from './Sidebar';
 import { Routes, Route } from 'react-router-dom';
-import EventList from './EventList';
+import Events from '../Events/Events';
 import Profile from './Profile';
 
 const Dashboard = () => (
@@ -10,7 +10,7 @@ const Dashboard = () => (
         <Sidebar />
         <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
             <Routes>
-                <Route path="events" element={<EventList />} />
+                <Route path="events" element={<Events />} />
                 <Route path="profile" element={<Profile />} />
             </Routes>
         </Box>

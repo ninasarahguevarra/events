@@ -39,7 +39,7 @@ const Register = () => (
             </Box>
             <Box sx={{ width: '48%' }}>
                 <TextField fullWidth label="Name" variant="outlined" size="small" sx={{ mb: 2 }} />
-                <TextField fullWidth label="Company" variant="outlined" size="small" sx={{ mb: 2 }} />
+                <TextField fullWidth label="Company" variant="outlined" size="small" sx={{ mb: 3 }} />
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                         label="Birthdate"
