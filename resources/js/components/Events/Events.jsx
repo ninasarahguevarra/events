@@ -12,6 +12,7 @@ import {
     LocalizationProvider,
 } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs, { Dayjs } from 'dayjs';
 
 const EventList = () => {
     const [events, setEvents] = useState([]); // Stores all created events
@@ -182,12 +183,12 @@ const EventForm = ({
                 >
                     <DateTimePicker
                         label="Date"
-                        value={eventData.date}
+                        value={dayjs(eventData.date)}
                         onChange={handleDateChange}
                     />
                 </Box>
             </LocalizationProvider>
-            <TextField
+            {/* <TextField
                 fullWidth
                 label="Image URL"
                 variant="outlined"
@@ -196,7 +197,7 @@ const EventForm = ({
                 name="image"
                 size="small"
                 sx={{ mb: 2 }}
-            />
+            /> */}
             <FormControlLabel
                 control={
                     <Checkbox
