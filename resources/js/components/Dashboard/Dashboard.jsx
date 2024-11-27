@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
-import { apiClient } from "../../utils/authUtils";
+import { apiClient, getAuth } from "../../utils/authUtils";
 
 const Dashboard = () => {
     const [event, setEvent] = useState(null);
@@ -25,6 +25,11 @@ const Dashboard = () => {
     dayjs.extend(timezone);
 
     useEffect(() => {
+
+        if (!getAuth()) {
+            navigate("/");
+        }
+
         const fetchEventDetails = async () => {
             try {
                 const response = await apiClient.get(`/api/events/current-event`);

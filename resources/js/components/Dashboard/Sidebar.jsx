@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Drawer, List, ListItem, ListItemText, Avatar, Typography, Box, Button } from "@mui/material";
+import { Drawer, List, ListItem, ListItemText, Avatar, Typography, Box } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import EventIcon from "@mui/icons-material/Event";
@@ -42,7 +42,7 @@ const Sidebar = () => {
             sx={{
                 width: 240,
                 flexShrink: 0,
-                "& .MuiDrawer-paper": { width: 240, boxSizing: "border-box" },
+                "& .MuiDrawer-paper": { width: 240, boxSizing: "border-box", display: "flex", flexDirection: "column" },
             }}
         >
             <Box sx={{ p: 2, textAlign: "center" }}>
@@ -56,20 +56,26 @@ const Sidebar = () => {
                     {user.email}
                 </Typography>
             </Box>
-            <List>
-                <ListItem button component={Link} to="/dashboard">
-                    <PeopleIcon sx={{ mr: 1 }} />
-                    <ListItemText primary="Dashboard" />
-                </ListItem>
-                <ListItem button component={Link} to="/events">
-                    <EventIcon sx={{ mr: 1 }} />
-                    <ListItemText primary="Events" />
-                </ListItem>
-                <ListItem button onClick={handleLogout}>
-                    <ExitToAppIcon sx={{ mr: 1 }} />
-                    <ListItemText primary="Logout" />
-                </ListItem>
-            </List>
+            <Box sx={{ flexGrow: 1 }}>
+                <List>
+                    <ListItem button component={Link} to="/dashboard">
+                        <PeopleIcon sx={{ mr: 1 }} />
+                        <ListItemText primary="Dashboard" />
+                    </ListItem>
+                    <ListItem button component={Link} to="/events">
+                        <EventIcon sx={{ mr: 1 }} />
+                        <ListItemText primary="Events" />
+                    </ListItem>
+                </List>
+            </Box>
+            <Box>
+                <List>
+                    <ListItem button onClick={handleLogout}>
+                        <ExitToAppIcon sx={{ mr: 1 }} />
+                        <ListItemText primary="Logout" />
+                    </ListItem>
+                </List>
+            </Box>
         </Drawer>
     );
 };

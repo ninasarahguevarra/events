@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import { Box, Typography, Button, CircularProgress, Snackbar, Alert } from "@mui/material";
-import { apiClient } from "../../utils/authUtils";
+import { useNavigate } from "react-router-dom";
+import { apiClient, getAuth } from "../../utils/authUtils";
 import EventForm from "./EventForm";
 import EventList from "./EventList";
 
@@ -9,6 +10,7 @@ const Events = () => {
     const [showForm, setShowForm] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [showNotification, setShowNotification] = useState(false);
+    const navigate = useNavigate();
 
     const handleEventSubmit = async (eventData) => {
         setIsSaving(true);
@@ -22,6 +24,12 @@ const Events = () => {
             setIsSaving(false);
         }
     };
+
+    useEffect(() => {
+        if (!getAuth()) {
+            navigate("/");
+        }
+    }, []);
 
     return (
         <Box sx={{ display: "flex", flexDirection: "column", p: 3 }}>

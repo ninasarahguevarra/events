@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { apiClient } from "../../utils/authUtils";
+import { apiClient, getAuth } from "../../utils/authUtils";
+import { useNavigate } from "react-router-dom";
 import {
     Table,
     TableBody,
@@ -16,9 +17,13 @@ const Registrants = () => {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [totalRows, setTotalRows] = useState(0);
+    const navigate = useNavigate();
 
     useEffect(() => {
-        // Fetch registrants data whenever page or rowsPerPage changes
+        if (!getAuth()) {
+            navigate("/");
+        }
+
         const fetchRegistrants = async () => {
             try {
                 const response = await apiClient.get(
