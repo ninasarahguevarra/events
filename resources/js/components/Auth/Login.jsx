@@ -38,7 +38,7 @@ const Login = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 minHeight: '100vh',
-                bgcolor: '#f5f5f5',
+                bgcolor: '#ffffff',
             }}
         >
             <Typography variant="h4" sx={{ mb: 3 }}>

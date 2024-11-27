@@ -31,9 +31,9 @@ function App() {
             <CssBaseline />
            
             <Router>
-                <Box sx={{ display: 'flex' }}>
+                <Box sx={{ display: 'flex', backgroundColor: '#ffffff'  }}>
                     {isAuthenticated && <Sidebar />}
-                    <Box component="main" sx={{ flexGrow: 1, p: 3  }}>
+                    <Box component="main" sx={{ flexGrow: 1, p: 3, backgroundColor: '#ffffff' }}>
                         <Routes>
                             <Route path="/" element={<Login />} />
                             <Route path="/register" element={<Register />} />
