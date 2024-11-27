@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import apiClient from "../../utils/axios"
 import {
     Table,
     TableBody,
@@ -9,7 +10,6 @@ import {
     TablePagination,
     Paper,
 } from '@mui/material';
-import axios from 'axios';
 
 const Registrants = () => {
     const [registrants, setRegistrants] = useState([]);
@@ -21,9 +21,8 @@ const Registrants = () => {
         // Fetch registrants data whenever page or rowsPerPage changes
         const fetchRegistrants = async () => {
             try {
-                const apiUrl = import.meta.env.VITE_API_URL;
-                const response = await axios.get(
-                    `${apiUrl}/api/registrants?page=${page + 1}&per_page=${rowsPerPage}`
+                const response = await apiClient.get(
+                    `/api/registrants?page=${page + 1}&per_page=${rowsPerPage}`
                 );
                 const { data } = response.data;
                 setRegistrants(data.data);

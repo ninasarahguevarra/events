@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import apiClient from "../../utils/axios"
 import {
     Paper,
     Table,
@@ -19,9 +19,6 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 
-
-const apiUrl = import.meta.env.VITE_API_URL;
-
 const EventList = () => {
     const [events, setEvents] = useState([]); // Stores all events from the API
     const [page, setPage] = useState(0);
@@ -35,8 +32,9 @@ const EventList = () => {
     // Fetch events from the API
     const fetchEvents = async () => {
         try {
-            const response = await axios.get(
-                `${apiUrl}/api/events?page=${page + 1}&per_page=${rowsPerPage}`
+
+            const response = await apiClient.get(
+                `/api/events?page=${page + 1}&per_page=${rowsPerPage}`
             );
 
             const { data } = response.data;
@@ -74,7 +72,7 @@ const EventList = () => {
                             <TableCell>Description</TableCell>
                             <TableCell>Date</TableCell>
                             <TableCell>Location</TableCell>
-                            <TableCell>Status</TableCell>
+                            {/* <TableCell>Status</TableCell> */}
                             <TableCell>Action</TableCell>
                         </TableRow>
                     </TableHead>
@@ -85,7 +83,7 @@ const EventList = () => {
                                 <TableCell>{event.description}</TableCell>
                                 <TableCell>{dayjs(event.date).tz('Asia/Manila').format('YYYY-MM-DD h:mm A')}</TableCell>
                                 <TableCell>{event.location}</TableCell>
-                                <TableCell>{event.status}</TableCell>
+                                {/* <TableCell>{event.status}</TableCell> */}
                                 <TableCell>
                                     <IconButton
                                         aria-label="edit"

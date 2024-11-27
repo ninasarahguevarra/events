@@ -1,18 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import { Box, Typography, Button } from "@mui/material";
-import axios from "axios";
+import apiClient from "../../utils/axios";
 import EventForm from "./EventForm";
 import EventList from "./EventList";
-
-const apiUrl = import.meta.env.VITE_API_URL;
 
 const Events = () => {
     const [showForm, setShowForm] = useState(false); // Controls form visibility
 
     const handleEventSubmit = async (eventData) => {
         try {
-            await axios.post(`${apiUrl}/api/events/save`, eventData);
+            await apiClient.post(`/api/events/save`, eventData);
             setShowForm(false);
         } catch (error) {
             console.error("Error creating event:", error);

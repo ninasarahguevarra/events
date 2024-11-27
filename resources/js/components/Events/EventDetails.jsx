@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import apiClient from "../../utils/axios"
 import {
     Box,
     TextField,
@@ -19,8 +19,6 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 
-const apiUrl = import.meta.env.VITE_API_URL;
-
 const EventDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -36,10 +34,12 @@ const EventDetails = () => {
     useEffect(() => {
         const fetchEventDetails = async () => {
             try {
-                const response = await axios.get(`${apiUrl}/api/events/show/${id}`);
+                const response = await apiClient.get(
+                    `/api/events/show/${id}`
+                );
                 const { event, registrant } = response.data.data;
                 setEventData(event);
-                
+
                 setRegistrants(registrant);
                 setLoading(false);
             } catch (error) {
@@ -59,10 +59,13 @@ const EventDetails = () => {
 
     const handleUpdate = async () => {
         try {
-            const response = await axios.post(`${apiUrl}/api/events/update/${id}`, {
-                ...eventData,
-                registrants,
-            });
+            const response = await apiClient.post(
+                `/api/events/update/${id}`,
+                {
+                    ...eventData,
+                    registrants,
+                }
+            );
             if (response.data.success) {
                 navigate("/events");
             }
@@ -72,9 +75,7 @@ const EventDetails = () => {
     };
 
     const filteredRegistrants =
-        tabIndex === 1
-            ? registrants.filter((r) => r.is_attended)
-            : registrants;
+        tabIndex === 1 ? registrants.filter((r) => r.is_attended) : registrants;
 
     if (loading) {
         return <Typography>Loading...</Typography>;
@@ -90,7 +91,9 @@ const EventDetails = () => {
                     <TextField
                         label="Event Name"
                         value={eventData.name}
-                        onChange={(e) => handleInputChange("name", e.target.value)}
+                        onChange={(e) =>
+                            handleInputChange("name", e.target.value)
+                        }
                         fullWidth
                         size="small"
                         sx={{ mb: 2 }}
@@ -98,7 +101,9 @@ const EventDetails = () => {
                     <TextField
                         label="Location"
                         value={eventData.location}
-                        onChange={(e) => handleInputChange("location", e.target.value)}
+                        onChange={(e) =>
+                            handleInputChange("location", e.target.value)
+                        }
                         fullWidth
                         size="small"
                         sx={{ mb: 2 }}
@@ -106,7 +111,9 @@ const EventDetails = () => {
                     <TextField
                         label="Description"
                         value={eventData.description}
-                        onChange={(e) => handleInputChange("description", e.target.value)}
+                        onChange={(e) =>
+                            handleInputChange("description", e.target.value)
+                        }
                         fullWidth
                         multiline
                         rows={2}
@@ -121,7 +128,9 @@ const EventDetails = () => {
                         onChange={(e) =>
                             handleInputChange(
                                 "date",
-                                dayjs.tz(e.target.value, manilaTimeZone).toISOString()
+                                dayjs
+                                    .tz(e.target.value, manilaTimeZone)
+                                    .toISOString()
                             )
                         }
                         fullWidth
@@ -154,6 +163,7 @@ const EventDetails = () => {
                             <TableCell>Company</TableCell>
                             <TableCell>Position</TableCell>
                             <TableCell>Attended</TableCell>
+                            {tabIndex === 1 && <TableCell>Date</TableCell>}
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -166,6 +176,13 @@ const EventDetails = () => {
                                 <TableCell>
                                     {registrant.is_attended ? "Yes" : "No"}
                                 </TableCell>
+                                {tabIndex === 1 && (
+                                    <TableCell>
+                                        {dayjs(registrant.updated_at)
+                                            .tz(manilaTimeZone)
+                                            .format("YYYY-MM-DD h:mm A")}
+                                    </TableCell>
+                                )}
                             </TableRow>
                         ))}
                     </TableBody>
@@ -184,7 +201,11 @@ const EventDetails = () => {
                 {/* <Button variant="contained" color="primary" onClick={handleUpdate}>
                     Save Changes
                 </Button> */}
-                <Button variant="outlined" color="secondary" onClick={() => navigate("/events")}>
+                <Button
+                    variant="outlined"
+                    color="secondary"
+                    onClick={() => navigate("/events")}
+                >
                     Cancel
                 </Button>
             </Box>
