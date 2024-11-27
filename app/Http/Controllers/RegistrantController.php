@@ -20,7 +20,7 @@ class RegistrantController extends Controller
             'message' => "Users successfully retrieved!",
         ], 200);
     }
-
+    
     public function saveRegistrant(Request $request)
     {
         try {
@@ -69,5 +69,37 @@ class RegistrantController extends Controller
                 'details' => $e->getMessage(),
             ], 500);
         }
+    }
+    
+    public function attendees(Request $request)
+    {
+        $query = Registrant::query()->select('id', 'name', 'email','updated_at')
+        ->where('event_id',1)
+        ->where('is_attended',1)
+        ->get();
+       
+
+        return response()->json([
+            'success' => true,
+            'data'    => $query,
+            'message' => "Users successfully retrieved!",
+        ], 200);
+    }
+    
+     public function forPrinting(Request $request)
+    {
+        
+        $query = Registrant::query()->select('id', 'name', 'email')
+        ->where('event_id',1)
+        ->where('printed',0);
+       
+        $perPage = $request->input('per_page', 10);
+        $users = $query->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'data'    => $users,
+            'message' => "Users successfully retrieved!",
+        ], 200);
     }
 }

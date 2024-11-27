@@ -11,7 +11,7 @@ const Login = () => {
 
     const handleLogin = async () => {
         try {
-            setError(null); // Clear any existing errors
+            setError(null);
 
             const response = await apiClient.post(`/api/login`, {
                 email,
@@ -68,9 +68,16 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                 />
-                <Button fullWidth variant="contained" color="primary" sx={{ mb: 2 }} onClick={handleLogin}>
+                <Button 
+                    fullWidth 
+                    variant="contained" 
+                    color="primary" 
+                    sx={{ py: 1.5, fontSize: "1rem" }} 
+                    onClick={handleLogin}
+                >
                     Login
                 </Button>
+
                 {/* <Typography>
                     Don't have an account? <Link to="/register">Register here</Link>.
                 </Typography> */}

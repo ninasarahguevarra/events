@@ -1,18 +1,104 @@
-import React from 'react';
-import { Box } from '@mui/material';
-import { Routes, Route } from 'react-router-dom';
-import Events from '../Events/Events';
-import Registrants from '../Registrants/Registrants';
+import React, { useEffect, useState } from "react";
+import {
+    Box,
+    Typography,
+    Card,
+    CardContent,
+    Divider,
+    List,
+    ListItem,
+    ListItemText,
+    Button,
+} from "@mui/material";
+import EventIcon from "@mui/icons-material/Event";
+import { useNavigate } from "react-router-dom";
+import apiClient from "../../utils/axios";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 
-const Dashboard = () => (
-    <Box sx={{ display: 'flex' }}>
-        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-            <Routes>
-                <Route path="events" element={<Events />} />
-                <Route path="registrants" element={<Registrants />} />
-            </Routes>
+const Dashboard = () => {
+    const [event, setEvent] = useState(null);
+    const [attendees, setAttendees] = useState([]);
+    const navigate = useNavigate();
+    dayjs.extend(utc);
+    dayjs.extend(timezone);
+
+
+    useEffect(() => {
+        const fetchEventDetails = async () => {
+            try {
+                const response = await apiClient.get(`/api/events/current-event`);
+                const eventData = response.data.data.event;
+                const attendees = response.data.data.attendees;
+
+                setEvent(eventData);
+                setAttendees(attendees);
+            } catch (error) {
+                console.error("Error fetching event details:", error);
+            }
+        };
+
+        fetchEventDetails();
+    }, []);
+
+    return (
+        <Box sx={{ p: 3 }}>
+            <Typography variant="h4" sx={{ mb: 3 }}>
+                Dashboard
+            </Typography>
+
+            {event ? (
+                <Card sx={{ mb: 3 }}>
+                    <CardContent>
+                        <Typography variant="h6" sx={{ mb: 1 }}>
+                            <EventIcon sx={{ verticalAlign: "middle", mr: 1 }} />
+                            {event.name}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                            Location: {event.location} | Date:{" "}
+                            {new Date(event.date).toLocaleDateString()}
+                        </Typography>
+                        <Divider sx={{ my: 2 }} />
+                        <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                            Top Registrants:
+                        </Typography>
+                        <List>
+                            {attendees.slice(0, 10).map((attendee) => (
+                                <ListItem key={attendee.id}>
+                                    <ListItemText
+                                        primary={attendee.name}
+                                        secondary={[attendee.email, ", ", dayjs(attendee.updated_at).tz('Asia/Manila').format('MM-DD-YYYY h:mm A')]}
+                                        
+                                    />  
+                                </ListItem>
+                            ))}
+                        </List>
+                        {attendees.length > 10 && (
+                            <Typography
+                                variant="body2"
+                                color="textSecondary"
+                                sx={{ mt: 1 }}
+                            >
+                                Showing 10 of {attendees.length} registrants.
+                            </Typography>
+                        )}
+                        <Button
+                            variant="outlined"
+                            sx={{ mt: 2 }}
+                            onClick={() => navigate("/events")}
+                        >
+                            See More Details
+                        </Button>
+                    </CardContent>
+                </Card>
+            ) : (
+                <Typography variant="body1" color="textSecondary">
+                    Loading event details...
+                </Typography>
+            )}
         </Box>
-    </Box>
-);
+    );
+};
 
 export default Dashboard;

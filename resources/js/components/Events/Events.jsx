@@ -1,29 +1,41 @@
 import React, { useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Typography, Button, CircularProgress, Snackbar, Alert } from "@mui/material";
 import apiClient from "../../utils/axios";
 import EventForm from "./EventForm";
 import EventList from "./EventList";
 
 const Events = () => {
-    const [showForm, setShowForm] = useState(false); // Controls form visibility
+    const [showForm, setShowForm] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [showNotification, setShowNotification] = useState(false);
 
     const handleEventSubmit = async (eventData) => {
+        setIsSaving(true);
         try {
             await apiClient.post(`/api/events/save`, eventData);
             setShowForm(false);
+            setShowNotification(true);
         } catch (error) {
             console.error("Error creating event:", error);
+        } finally {
+            setIsSaving(false);
         }
     };
 
     return (
         <Box sx={{ display: "flex", flexDirection: "column", p: 3 }}>
             {showForm ? (
-                <EventForm
-                    onSubmit={handleEventSubmit}
-                    onCancel={() => setShowForm(false)}
-                />
+                isSaving ? (
+                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", mt: 5 }}>
+                        <CircularProgress />
+                    </Box>
+                ) : (
+                    <EventForm
+                        onSubmit={handleEventSubmit}
+                        onCancel={() => setShowForm(false)}
+                    />
+                )
             ) : (
                 <>
                     <Box
@@ -48,6 +60,22 @@ const Events = () => {
                     <EventList />
                 </>
             )}
+
+            {/* Snackbar for success notification */}
+            <Snackbar
+                open={showNotification}
+                autoHideDuration={3000}
+                onClose={() => setShowNotification(false)}
+                anchorOrigin={{ vertical: "top", horizontal: "right" }}
+            >
+                <Alert
+                    onClose={() => setShowNotification(false)}
+                    severity="success"
+                    sx={{ width: "100%" }}
+                >
+                    Event successfully added!
+                </Alert>
+            </Snackbar>
         </Box>
     );
 };

@@ -81,7 +81,7 @@ const EventList = () => {
                             <TableRow key={event.id}>
                                 <TableCell>{event.name}</TableCell>
                                 <TableCell>{event.description}</TableCell>
-                                <TableCell>{dayjs(event.date).tz('Asia/Manila').format('YYYY-MM-DD h:mm A')}</TableCell>
+                                <TableCell>{dayjs(event.date).tz('Asia/Manila').format('MM-DD-YYYY h:mm A')}</TableCell>
                                 <TableCell>{event.location}</TableCell>
                                 {/* <TableCell>{event.status}</TableCell> */}
                                 <TableCell>

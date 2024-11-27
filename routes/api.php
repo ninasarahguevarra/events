@@ -31,6 +31,7 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/update/{id}', [EventController::class, 'updateEvent']);
         Route::get('/show/{id}', [EventController::class, 'showEvent']);
         Route::delete('/destroy/{id}', [EventController::class, 'destroy']);
+        Route::get('/current-event', [EventController::class, 'showCurrentEvent']);
     });
     
     Route::prefix('attendees')->group(function () {

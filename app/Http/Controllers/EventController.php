@@ -231,6 +231,35 @@ class EventController extends Controller
         }
     }
 
+    public function showCurrentEvent() {
+        $now = now();
+        $currentEvent = Event::where('date', '>=', $now)->orderBy('date')->first();
+    
+        if (!$currentEvent) {
+            $currentEvent = Event::where('date', '>', $now)->orderBy('date')->first();
+        }
+    
+        if (!$currentEvent) {
+            throw new \Exception("No current or upcoming event found.");
+        }
+    
+        $attendees = Registrant::where('event_id', $currentEvent->id)
+            ->where('is_attended', 1)
+            ->orderBy('updated_at', 'asc')
+            ->get(['id', 'name', 'email', 'updated_at']);
+
+        $data = [
+            'event' => $currentEvent,
+            'attendees' => $attendees ?? null,
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+            'message' => "Event details successfully retrieved",
+        ]);
+    }
+
     public function showEvent($id)
     {
         $event = Event::find($id);

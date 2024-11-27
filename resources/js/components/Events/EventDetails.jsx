@@ -84,7 +84,7 @@ const EventDetails = () => {
     return (
         <Box sx={{ p: 3 }}>
             <Typography variant="h4" gutterBottom>
-                Update Event Details
+                Event Details
             </Typography>
             <Paper sx={{ p: 3, mb: 3 }}>
                 <Box>
@@ -180,7 +180,7 @@ const EventDetails = () => {
                                     <TableCell>
                                         {dayjs(registrant.updated_at)
                                             .tz(manilaTimeZone)
-                                            .format("YYYY-MM-DD h:mm A")}
+                                            .format("MM-DD-YYYY h:mm A")}
                                     </TableCell>
                                 )}
                             </TableRow>
