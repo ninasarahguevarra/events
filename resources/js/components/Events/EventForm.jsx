@@ -12,22 +12,37 @@ const EventForm = ({ onSubmit, onCancel }) => {
         date: dayjs(), // Default to the current date and time
     });
 
+    const [errors, setErrors] = useState({ name: false, date: false });
+
     const handleChange = (event) => {
         setEventData({ ...eventData, [event.target.name]: event.target.value });
+        setErrors({ ...errors, [event.target.name]: false });
     };
 
     const handleDateChange = (newDate) => {
         setEventData({ ...eventData, date: newDate });
+        setErrors({ ...errors, date: false });
+    };
+
+    const validate = () => {
+        const newErrors = {
+            name: !eventData.name.trim(),
+            date: !eventData.date || !dayjs(eventData.date).isValid(),
+        };
+        setErrors(newErrors);
+        return !Object.values(newErrors).some((error) => error);
     };
 
     const handleSubmit = (event) => {
         event.preventDefault();
-        onSubmit({
-            name: eventData.name,
-            description: eventData.description,
-            location: eventData.location,
-            date: eventData.date.toISOString(), // Format date to ISO string for the API
-        });
+        if (validate()) {
+            onSubmit({
+                name: eventData.name,
+                description: eventData.description,
+                location: eventData.location,
+                date: eventData.date.toISOString(), // Format date to ISO string for the API
+            });
+        }
     };
 
     return (
@@ -58,6 +73,8 @@ const EventForm = ({ onSubmit, onCancel }) => {
                     name="name"
                     size="small"
                     sx={{ mb: 2 }}
+                    error={errors.name}
+                    helperText={errors.name ? "Name is required." : ""}
                 />
                 <TextField
                     fullWidth
@@ -86,7 +103,16 @@ const EventForm = ({ onSubmit, onCancel }) => {
                         label="Date"
                         value={eventData.date}
                         onChange={handleDateChange}
-                        sx={{ mb: 2 }}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                fullWidth
+                                size="small"
+                                sx={{ mb: 2 }}
+                                error={errors.date}
+                                helperText={errors.date ? "Date is required." : ""}
+                            />
+                        )}
                     />
                 </LocalizationProvider>
                 <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
