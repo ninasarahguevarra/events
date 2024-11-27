@@ -6,9 +6,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\ValidationException;
 use Laravel\Passport\HasApiTokens;
 class User extends Authenticatable
 {
@@ -46,21 +43,9 @@ class User extends Authenticatable
     }
 
     public static array $rules = [
-        'name' => 'required|string',
-        'email' => 'required|string',
+        'name' => 'required|min:4|string',
+        'email' => 'required|string|email|max:255|unique:users',
         'email_verified_at' => 'datetime',
-        'password' => 'hashed',
+        'password' => 'hashed|required|min:8',
     ];
-
-    public static function validate(array $data)
-    {
-        $validator = Validator::make($data, self::$rules);
-
-        if ($validator->fails()) {
-            Log::error('Validation failed:', $validator->errors()->toArray());
-            throw new ValidationException($validator);
-        }
-
-        return true;
-    }
 }

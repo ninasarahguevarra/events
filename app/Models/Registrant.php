@@ -75,7 +75,7 @@ class Registrant extends Model
         'contact_number' => 'required|string',
         'score' => 'nullable|integer',
         'is_agree_privacy' => 'required|boolean',
-        'is_attended' => 'required|boolean',
+        'is_attended' => 'boolean',
     ];
 
     public static function validate(array $data)
