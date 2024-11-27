@@ -176,39 +176,46 @@ const EventDetails = () => {
                     <Tab label="Registrants" />
                     <Tab label="Attendees" />
                 </Tabs>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Name</TableCell>
-                            <TableCell>Email</TableCell>
-                            <TableCell>Company</TableCell>
-                            <TableCell>Position</TableCell>
-                            <TableCell>Attended</TableCell>
-                            {tabIndex === 1 && <TableCell>Date</TableCell>}
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {filteredRegistrants.map((registrant) => (
-                            <TableRow key={registrant.id}>
-                                <TableCell>{registrant.name}</TableCell>
-                                <TableCell>{registrant.email}</TableCell>
-                                <TableCell>{registrant.company}</TableCell>
-                                <TableCell>{registrant.position}</TableCell>
-                                <TableCell>
-                                    {registrant.is_attended ? "Yes" : "No"}
-                                </TableCell>
-                                {tabIndex === 1 && (
-                                    <TableCell>
-                                        {dayjs(registrant.updated_at)
-                                            .tz(manilaTimeZone)
-                                            .format("MM-DD-YYYY h:mm A")}
-                                    </TableCell>
-                                )}
+                {registrants.length > 0 ? (
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Name</TableCell>
+                                <TableCell>Email</TableCell>
+                                <TableCell>Company</TableCell>
+                                <TableCell>Position</TableCell>
+                                <TableCell>Attended</TableCell>
+                                {tabIndex === 1 && <TableCell>Date</TableCell>}
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                        </TableHead>
+                        <TableBody>
+                            {filteredRegistrants.map((registrant) => (
+                                <TableRow key={registrant.id}>
+                                    <TableCell>{registrant.name}</TableCell>
+                                    <TableCell>{registrant.email}</TableCell>
+                                    <TableCell>{registrant.company}</TableCell>
+                                    <TableCell>{registrant.position}</TableCell>
+                                    <TableCell>
+                                        {registrant.is_attended ? "Yes" : "No"}
+                                    </TableCell>
+                                    {tabIndex === 1 && (
+                                        <TableCell>
+                                            {dayjs(registrant.updated_at)
+                                                .tz(manilaTimeZone)
+                                                .format("MM-DD-YYYY h:mm A")}
+                                        </TableCell>
+                                    )}
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                ) : (
+                    <Typography sx={{ textAlign: "center", mt: 3, p: 3 }}>
+                        No registrants yet for this event.
+                    </Typography>
+                )}
             </Paper>
+            
 
             {/* Save and Cancel Buttons */}
             <Box
