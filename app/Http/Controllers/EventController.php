@@ -177,36 +177,43 @@ class EventController extends Controller
         }
     }
 
-    public function setEventAttendees(Request $request, $id) {
+    public function setEventAttendees(Request $request) {
         DB::beginTransaction();
         try {
-            $event = Event::find($id);
+            $event = Event::find($request->event_id);
 
             if (!$event) {
                 throw new \Exception("No existing event.");
             }
 
-            $registrant = Registrant::where('id', $request->uuid)->first();
+            $registrant = Registrant::where('id', $request->registrant_id)->first();
 
             if (!$registrant) {
-                throw new \Exception("No existing registrant.");
+                throw new \Exception("No existing registrant, the QR code is not valid");
             }
 
-            $list = [
-                'id' => $registrant['id'],
-                'event_id' => $id,
-                'is_attended' => $request->is_attended
-            ];
-
-            $registrant->update($list);
-
-            DB::commit();
+            if (!$registrant['is_attended']) {
+                $list = [
+                    'id' => $registrant['id'],
+                    'event_id' => $request->event_id,
+                    'is_attended' => true
+                ];
+    
+                $registrant->update($list);
+    
+                DB::commit();
+    
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Registrant successfully marked as attended.',
+                ]);
+            }
 
             return response()->json([
-                'success' => true,
-                'data' => $registrant->fresh(),
-                'message' => "Registrant successfully tagged as attendee.",
-            ]);
+                'success' => false,
+                'message' => 'Registrant already marked as attended.',
+            ], 400);
+
         } catch (\Exception $e) {
             DB::rollBack();
 
