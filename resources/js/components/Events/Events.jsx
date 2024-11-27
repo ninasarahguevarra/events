@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import { Box, Typography, Button, CircularProgress, Snackbar, Alert } from "@mui/material";
-import apiClient from "../../utils/axios";
+import { apiClient } from "../../utils/authUtils";
 import EventForm from "./EventForm";
 import EventList from "./EventList";
 

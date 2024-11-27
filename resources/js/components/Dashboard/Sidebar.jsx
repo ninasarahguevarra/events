@@ -5,7 +5,7 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import EventIcon from "@mui/icons-material/Event";
 import PeopleIcon from "@mui/icons-material/People";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
-import apiClient from "../../utils/axios";
+import { clearAuth, apiClient } from "../../utils/authUtils";
 
 const Sidebar = () => {
     const [user, setUser] = useState(null);
@@ -26,8 +26,9 @@ const Sidebar = () => {
     const handleLogout = async () => {
         try {
             await apiClient.get(`/api/users/logout`);
-            localStorage.removeItem("authToken");
+            clearAuth();
             navigate("/");
+            window.location.reload();
         } catch (error) {
             console.error("Error during logout:", error);
         }

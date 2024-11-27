@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button, TextField, Box, Typography, Alert } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
-import apiClient from "../../utils/axios";
+import { setAuth, apiClient } from "../../utils/authUtils";
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -20,9 +20,10 @@ const Login = () => {
 
             const { token, user_info } = response.data;
 
-            localStorage.setItem('authToken', token);
+            setAuth(token)
 
             navigate('/dashboard');
+            window.location.reload();
         } catch (err) {
             const errorMsg = err.response?.data?.message || 'An error occurred. Please try again.';
             setError(errorMsg);

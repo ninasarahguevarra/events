@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import apiClient from "../../utils/axios"
+import { apiClient } from "../../utils/authUtils";
 import {
     Box,
     TextField,
@@ -94,6 +94,12 @@ const EventDetails = () => {
                         onChange={(e) =>
                             handleInputChange("name", e.target.value)
                         }
+                        slotProps={{
+                            input: {
+                              readOnly: true,
+                            },
+                          }}
+                
                         fullWidth
                         size="small"
                         sx={{ mb: 2 }}
@@ -104,6 +110,11 @@ const EventDetails = () => {
                         onChange={(e) =>
                             handleInputChange("location", e.target.value)
                         }
+                        slotProps={{
+                            input: {
+                              readOnly: true,
+                            },
+                          }}
                         fullWidth
                         size="small"
                         sx={{ mb: 2 }}
@@ -114,6 +125,11 @@ const EventDetails = () => {
                         onChange={(e) =>
                             handleInputChange("description", e.target.value)
                         }
+                        slotProps={{
+                            input: {
+                              readOnly: true,
+                            },
+                          }}
                         fullWidth
                         multiline
                         rows={2}
@@ -133,6 +149,11 @@ const EventDetails = () => {
                                     .toISOString()
                             )
                         }
+                        slotProps={{
+                            input: {
+                              readOnly: true,
+                            },
+                          }}
                         fullWidth
                         size="small"
                         InputLabelProps={{

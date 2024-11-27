@@ -12,10 +12,10 @@ import {
 } from "@mui/material";
 import EventIcon from "@mui/icons-material/Event";
 import { useNavigate } from "react-router-dom";
-import apiClient from "../../utils/axios";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
+import { apiClient } from "../../utils/authUtils";
 
 const Dashboard = () => {
     const [event, setEvent] = useState(null);
@@ -23,7 +23,6 @@ const Dashboard = () => {
     const navigate = useNavigate();
     dayjs.extend(utc);
     dayjs.extend(timezone);
-
 
     useEffect(() => {
         const fetchEventDetails = async () => {
@@ -61,26 +60,38 @@ const Dashboard = () => {
                         </Typography>
                         <Divider sx={{ my: 2 }} />
                         <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                            Top Registrants:
+                            Top Attendees:
                         </Typography>
-                        <List>
-                            {attendees.slice(0, 10).map((attendee) => (
-                                <ListItem key={attendee.id}>
-                                    <ListItemText
-                                        primary={attendee.name}
-                                        secondary={[attendee.email, ", ", dayjs(attendee.updated_at).tz('Asia/Manila').format('MM-DD-YYYY h:mm A')]}
-                                        
-                                    />  
-                                </ListItem>
-                            ))}
-                        </List>
+                        {/* Check if there are attendees */}
+                        {attendees.length > 0 ? (
+                            <List>
+                                {attendees.slice(0, 10).map((attendee) => (
+                                    <ListItem key={attendee.id}>
+                                        <ListItemText
+                                            primary={attendee.name}
+                                            secondary={[
+                                                attendee.email,
+                                                ", ",
+                                                dayjs(attendee.updated_at)
+                                                    .tz("Asia/Manila")
+                                                    .format("MM-DD-YYYY h:mm A"),
+                                            ]}
+                                        />
+                                    </ListItem>
+                                ))}
+                            </List>
+                        ) : (
+                            <Typography variant="body2" color="textSecondary">
+                                No attendees yet.
+                            </Typography>
+                        )}
                         {attendees.length > 10 && (
                             <Typography
                                 variant="body2"
                                 color="textSecondary"
                                 sx={{ mt: 1 }}
                             >
-                                Showing 10 of {attendees.length} registrants.
+                                Showing 10 of {attendees.length} attendees.
                             </Typography>
                         )}
                         <Button

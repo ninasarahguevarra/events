@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const apiClient = axios.create({
+export const apiClient = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
 });
 
@@ -13,9 +13,19 @@ apiClient.interceptors.request.use(
         return config;
     },
     (error) => {
-        // Handle errors
         return Promise.reject(error);
     }
 );
 
-export default apiClient;
+export const setAuth = (token) => {
+    localStorage.setItem("authToken", token);
+};
+
+export const getAuth = () => {
+    return localStorage.getItem("authToken");
+};
+
+export const clearAuth = () => {
+    localStorage.removeItem("authToken");
+};
+

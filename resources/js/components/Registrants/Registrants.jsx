@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import apiClient from "../../utils/axios"
+import { apiClient } from "../../utils/authUtils";
 import {
     Table,
     TableBody,
