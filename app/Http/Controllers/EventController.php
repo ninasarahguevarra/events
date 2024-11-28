@@ -186,6 +186,16 @@ class EventController extends Controller
                 throw new \Exception("No existing event.");
             }
 
+            $eventDate = Carbon::parse($event->date);
+            $currentTime = Carbon::now();
+            $eventEndTime = $eventDate->addHours(9);
+
+            if ($currentTime->gt($eventEndTime)) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'QR code cannot be scanned. Event has already ended.',
+                ], 200);
+            }
             $registrant = Registrant::where('id', $request->registrant_id)->first();
 
             if (!$registrant) {
