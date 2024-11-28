@@ -10,9 +10,13 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login']);
 
+//mobile app scanning
 Route::prefix('events')->group(function () {
     Route::post('/set-attendee', [EventController::class, 'setEventAttendees']);
 });
+
+//mobile app fetching
+Route::get('/event-attendees', [RegistrantController::class, 'attendees']);
 
 Route::middleware('auth:api')->group(function () {
     Route::prefix('users')->group(function () {
@@ -32,6 +36,7 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/show/{id}', [EventController::class, 'showEvent']);
         Route::delete('/destroy/{id}', [EventController::class, 'destroy']);
         Route::get('/current-event', [EventController::class, 'showCurrentEvent']);
+        Route::get('/show-top-companies', [EventController::class, 'showTopCompanies']);
     });
     
     Route::prefix('attendees')->group(function () {

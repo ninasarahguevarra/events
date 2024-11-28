@@ -180,6 +180,7 @@ const EventDetails = () => {
                     <Table>
                         <TableHead>
                             <TableRow>
+                                <TableCell>#</TableCell>
                                 <TableCell>Name</TableCell>
                                 <TableCell>Email</TableCell>
                                 <TableCell>Company</TableCell>
@@ -189,8 +190,9 @@ const EventDetails = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {filteredRegistrants.map((registrant) => (
+                            {filteredRegistrants.map((registrant, index) => (
                                 <TableRow key={registrant.id}>
+                                    <TableCell>{index + 1}</TableCell>
                                     <TableCell>{registrant.name}</TableCell>
                                     <TableCell>{registrant.email}</TableCell>
                                     <TableCell>{registrant.company}</TableCell>

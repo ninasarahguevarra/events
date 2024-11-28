@@ -233,7 +233,10 @@ class EventController extends Controller
 
     public function showCurrentEvent() {
         $now = now();
-        $currentEvent = Event::where('date', '>=', $now)->orderBy('date')->first();
+        $currentEvent = Event::where('date', '<=', $now)
+            ->orWhereBetween('date', [$now->startOfDay(), $now->endOfDay()])
+            ->orderBy('date', 'asc')
+            ->first();
     
         if (!$currentEvent) {
             $currentEvent = Event::where('date', '>', $now)->orderBy('date')->first();
@@ -246,11 +249,14 @@ class EventController extends Controller
         $attendees = Registrant::where('event_id', $currentEvent->id)
             ->where('is_attended', 1)
             ->orderBy('updated_at', 'asc')
-            ->get(['id', 'name', 'email', 'updated_at']);
-
+            ->get(['id', 'name', 'email', 'company', 'updated_at']);
+    
+        $totalRegistrants = Registrant::where('event_id', $currentEvent->id)->count();
+    
         $data = [
             'event' => $currentEvent,
             'attendees' => $attendees ?? null,
+            'total_registrant' => $totalRegistrants,
         ];
 
         return response()->json([
@@ -260,6 +266,38 @@ class EventController extends Controller
         ]);
     }
 
+    public function showTopCompanies()
+    {
+        try {
+            $topCompaniesData = Registrant::where('is_attended', true)
+                ->whereNotNull('company')
+                ->selectRaw('company, COUNT(*) as attendee_count')
+                ->groupBy('company')
+                ->orderBy('attendee_count', 'desc')
+                ->limit(5)
+                ->get();
+    
+            if ($topCompaniesData->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No attended registrants found.',
+                ]);
+            }
+    
+            return response()->json([
+                'success' => true,
+                'data' => $topCompaniesData,
+                'message' => 'Top companies retrieved successfully.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching the top companies.',
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+    
     public function showEvent($id)
     {
         $event = Event::find($id);
