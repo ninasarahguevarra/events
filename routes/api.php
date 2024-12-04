@@ -27,6 +27,7 @@ Route::middleware('auth:api')->group(function () {
     Route::prefix('registrants')->group(function () {
         Route::get('/', [RegistrantController::class, 'index']);
         Route::post('/save', [RegistrantController::class, 'saveRegistrant']);
+        Route::get('/by-gender', [RegistrantController::class, 'fetchRegistrantByGender']);
     });
     
     Route::prefix('events')->group(function () {

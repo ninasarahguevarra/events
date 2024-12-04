@@ -15,6 +15,7 @@ import EventIcon from "@mui/icons-material/Event";
 import CorporateFareIcon from "@mui/icons-material/CorporateFare";
 import GroupIcon from "@mui/icons-material/Group";
 import Chart from "react-apexcharts";
+import WcIcon from '@mui/icons-material/Wc';
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
@@ -26,6 +27,7 @@ const Dashboard = () => {
     const [attendees, setAttendees] = useState([]);
     const [count, setCount] = useState(null);
     const [topCompanies, setTopCompanies] = useState([]);
+    const [genderData, setGenderData] = useState(null);
     const navigate = useNavigate();
     dayjs.extend(utc);
     dayjs.extend(timezone);
@@ -65,11 +67,21 @@ const Dashboard = () => {
             }
         };
 
+        const fetchGenderData = async () => {
+            try {
+                const response = await apiClient.get('/api/registrants/by-gender');
+                setGenderData(response.data.data);
+            } catch (error) {
+                console.error("Error fetching gender data:", error);
+            }
+        };
+
         fetchEventDetails();
         fetchTopCompanies();
+        fetchGenderData();
     }, []);
 
-    const chartOptions = {
+    const topCompaniesChartOptions = {
         chart: {
             type: "bar",
             height: 350,
@@ -90,12 +102,26 @@ const Dashboard = () => {
         colors: ["#1E88E5"],
     };
 
-    const chartSeries = [
+    const topCompaniesChartSeries = [
         {
             name: "Attendees",
             data: topCompanies.map((company) => company.attendee_count),
         },
     ];
+
+    const genderChartOptions = {
+        chart: {
+            type: 'pie',
+            height: 350,
+        },
+        labels: genderData ? Object.keys(genderData) : [],
+        colors: ['#1E88E5', '#FF4560'], // Custom colors for Male/Female
+    };
+    
+    const genderChartSeries = genderData
+        ? Object.values(genderData)
+        : [];
+
 
     return (
         <Box sx={{ p: 3 }}>
@@ -207,8 +233,8 @@ const Dashboard = () => {
                                             Top Companies by Attendee Count
                                         </Typography>
                                         <Chart
-                                            options={chartOptions}
-                                            series={chartSeries}
+                                            options={topCompaniesChartOptions}
+                                            series={topCompaniesChartSeries}
                                             type="bar"
                                             height={350}
                                         />
@@ -222,6 +248,35 @@ const Dashboard = () => {
                                     Loading top companies data...
                                 </Typography>
                             )}
+
+                            <Card sx={{ mb: 3 }}>
+                                <CardContent>
+                                    <Typography variant="h6" sx={{ mb: 2 }}>
+                                        <WcIcon
+                                            sx={{
+                                                verticalAlign: "middle",
+                                                mr: 1,
+                                            }}
+                                        />
+                                        Registrant Gender Distribution
+                                    </Typography>
+                                    {genderData ? (
+                                        <Chart
+                                            options={genderChartOptions}
+                                            series={genderChartSeries}
+                                            type="pie"
+                                            height={350}
+                                        />
+                                    ) : (
+                                        <Typography
+                                            variant="body1"
+                                            color="textSecondary"
+                                        >
+                                            Loading gender data...
+                                        </Typography>
+                                    )}
+                                </CardContent>
+                            </Card>
                         </Grid2>
                     </Grid2>
                 </>

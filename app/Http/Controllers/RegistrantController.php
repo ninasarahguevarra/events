@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Registrant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class RegistrantController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Registrant::query()->select('id', 'name', 'email');
+        $query = Registrant::query()->select('id', 'name', 'email')->where('event_id', $request->event_id);
         $perPage = $request->input('per_page', 10);
         $users = $query->paginate($perPage);
 
@@ -76,6 +77,7 @@ class RegistrantController extends Controller
         $query = Registrant::query()->select('id', 'name', 'email','updated_at')
         ->where('event_id',1)
         ->where('is_attended',1)
+        ->orderBy('updated_at','desc')
         ->get();
        
 
@@ -90,7 +92,7 @@ class RegistrantController extends Controller
     {
         
         $query = Registrant::query()->select('id', 'name', 'email')
-        ->where('event_id',1)
+        ->where('event_id', $request->event_id)
         ->where('printed',0);
        
         $perPage = $request->input('per_page', 10);
@@ -101,5 +103,22 @@ class RegistrantController extends Controller
             'data'    => $users,
             'message' => "Users successfully retrieved!",
         ], 200);
+    }
+
+    public function fetchRegistrantByGender(Request $request)
+    {
+        $registrantCounts = Registrant::selectRaw('gender, COUNT(*) as count')
+            ->groupBy('gender')
+            ->where('event_id', $request->event_id)
+            ->get();
+    
+        $genderData = $registrantCounts->mapWithKeys(function ($item) {
+            return [$item->gender => $item->count];
+        });
+    
+        return response()->json([
+            'success' => true,
+            'data' => $genderData,
+        ]);
     }
 }

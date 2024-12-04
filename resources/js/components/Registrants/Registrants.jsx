@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { apiClient, getAuth } from "../../utils/authUtils";
-import { useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
     Table,
     TableBody,
@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 
 const Registrants = () => {
+    const { event_id } = useParams();
     const [registrants, setRegistrants] = useState([]);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -27,7 +28,7 @@ const Registrants = () => {
         const fetchRegistrants = async () => {
             try {
                 const response = await apiClient.get(
-                    `/api/registrants?page=${page + 1}&per_page=${rowsPerPage}`
+                    `/api/registrants?event_id=${event_id}&page=${page + 1}&per_page=${rowsPerPage}`
                 );
                 const { data } = response.data;
                 setRegistrants(data.data);
