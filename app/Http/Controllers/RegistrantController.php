@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Registrant;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class RegistrantController extends Controller
 {
@@ -104,7 +105,7 @@ class RegistrantController extends Controller
             'message' => "Users successfully retrieved!",
         ], 200);
     }
-
+    
     public function fetchRegistrantByGender(Request $request)
     {
         $registrantCounts = Registrant::selectRaw('gender, COUNT(*) as count')

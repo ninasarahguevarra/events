@@ -11,6 +11,7 @@ import {
     TablePagination,
     Paper,
 } from '@mui/material';
+import QRCode from "react-qr-code";
 
 const Registrants = () => {
     const { event_id } = useParams();
@@ -28,7 +29,7 @@ const Registrants = () => {
         const fetchRegistrants = async () => {
             try {
                 const response = await apiClient.get(
-                    `/api/registrants?event_id=${event_id}&page=${page + 1}&per_page=${rowsPerPage}`
+                    `/api/for-printing?event_id=${event_id}&page=${page + 1}&per_page=${rowsPerPage}`
                 );
                 const { data } = response.data;
                 setRegistrants(data.data);
@@ -68,7 +69,12 @@ const Registrants = () => {
                                 <TableCell>{registrant.id}</TableCell>
                                 <TableCell>{registrant.name}</TableCell>
                                 <TableCell>{registrant.email}</TableCell>
-                                <TableCell></TableCell>
+                                <TableCell><QRCode
+                                    size={256}
+                                    style={{ height: "auto" }}
+                                    value={registrant.id}
+                                    viewBox={`0 0 256 256`}
+                                  /></TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
