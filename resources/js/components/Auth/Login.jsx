@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, TextField, Box, Typography, Alert } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
-import { setAuth, apiClient } from "../../utils/authUtils";
+import { setAuth, apiClient, getAuth } from "../../utils/authUtils";
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -29,6 +29,13 @@ const Login = () => {
             setError(errorMsg);
         }
     };
+
+    useEffect(() => {
+        if (getAuth()) {
+            navigate("/dashboard");
+        }
+
+    }, []);
 
     return (
         <Box
