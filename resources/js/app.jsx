@@ -40,7 +40,7 @@ function App() {
                             <Route path="/dashboard/*" element={<Dashboard />} />
                             <Route path="/events/*" element={<Events />} />
                             <Route path="/events/:id" element={<EventDetails />} />
-                            <Route path="/registrants/:event_id" element={<Registrants />} />
+                            <Route path="/registrants/:id" element={<Registrants />} />
                         </Routes>
                     </Box>
                 </Box>

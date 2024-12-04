@@ -115,7 +115,7 @@ const Dashboard = () => {
             height: 350,
         },
         labels: genderData ? Object.keys(genderData) : [],
-        colors: ['#1E88E5', '#FF4560'], // Custom colors for Male/Female
+        colors: ['#FF4560', '#1E88E5'], // Custom colors for Male/Female
     };
     
     const genderChartSeries = genderData

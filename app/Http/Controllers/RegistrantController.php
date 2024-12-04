@@ -110,7 +110,7 @@ class RegistrantController extends Controller
     {
         $registrantCounts = Registrant::selectRaw('gender, COUNT(*) as count')
             ->groupBy('gender')
-            ->where('event_id', $request->event_id)
+            ->where('event_id', 1)
             ->get();
     
         $genderData = $registrantCounts->mapWithKeys(function ($item) {

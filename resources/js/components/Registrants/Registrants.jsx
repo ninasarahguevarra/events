@@ -14,7 +14,7 @@ import {
 import QRCode from "react-qr-code";
 
 const Registrants = () => {
-    const { event_id } = useParams();
+    const { id } = useParams();
     const [registrants, setRegistrants] = useState([]);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -29,7 +29,7 @@ const Registrants = () => {
         const fetchRegistrants = async () => {
             try {
                 const response = await apiClient.get(
-                    `/api/for-printing?event_id=${event_id}&page=${page + 1}&per_page=${rowsPerPage}`
+                    `/api/registrants?event_id=${id}&page=${page + 1}&per_page=${rowsPerPage}`
                 );
                 const { data } = response.data;
                 setRegistrants(data.data);
