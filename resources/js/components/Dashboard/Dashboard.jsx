@@ -10,6 +10,7 @@ import {
     ListItem,
     ListItemText,
     Button,
+    Toolbar,
 } from "@mui/material";
 import EventIcon from "@mui/icons-material/Event";
 import CorporateFareIcon from "@mui/icons-material/CorporateFare";
@@ -59,8 +60,6 @@ const Dashboard = () => {
                 const response = await apiClient.get(
                     `/api/events/show-top-companies`
                 );
-                console.log(response);
-
                 setTopCompanies(response.data.data);
             } catch (error) {
                 console.error("Error fetching top companies:", error);
@@ -124,7 +123,12 @@ const Dashboard = () => {
 
 
     return (
-        <Box sx={{ p: 3 }}>
+        <Box>
+            <Toolbar 
+                sx={{
+                    display: { sm: 'none' }
+                }}
+            />
             <Typography variant="h4" sx={{ mb: 2 }}>
                 Dashboard
             </Typography>
