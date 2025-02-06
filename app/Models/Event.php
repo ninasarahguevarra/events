@@ -57,8 +57,8 @@ class Event extends Model
         return $this->hasMany(Attendee::class);
     }
 
-    public function registrant()
+    public function registrants()
     {
-        return $this->hasMany(Registrant::class);
+        return $this->hasMany(Registrant::class, 'event_id');
     }
 }

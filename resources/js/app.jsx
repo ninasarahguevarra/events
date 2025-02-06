@@ -26,17 +26,20 @@ function App() {
         };
         checkAuthStatus();
     }, []);
+
+    const isRegistrationPage = location.pathname.startsWith('/register');
+
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
            
             <Router>
                 <Box sx={{ display: 'flex', backgroundColor: '#ffffff'  }}>
-                    {isAuthenticated && <Sidebar />}
+                    {isAuthenticated && !isRegistrationPage && <Sidebar />}
                     <Box component="main" sx={{ flexGrow: 1, p: 3, backgroundColor: '#ffffff' }}>
                         <Routes>
                             <Route path="/" element={<Login />} />
-                            <Route path="/register" element={<Register />} />
+                            <Route path="/register/:id" element={<Register />} />
                             <Route path="/dashboard/*" element={<Dashboard />} />
                             <Route path="/events/*" element={<Events />} />
                             <Route path="/events/:id" element={<EventDetails />} />

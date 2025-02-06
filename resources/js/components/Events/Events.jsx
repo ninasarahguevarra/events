@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
-import { Box, Typography, Button, CircularProgress, Snackbar, Alert } from "@mui/material";
+import { Box, Typography, Button, CircularProgress, Snackbar, Alert, Toolbar } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { apiClient, getAuth } from "../../utils/authUtils";
 import EventForm from "./EventForm";
@@ -32,7 +32,12 @@ const Events = () => {
     }, []);
 
     return (
-        <Box sx={{ display: "flex", flexDirection: "column", p: 3 }}>
+        <Box sx={{ display: "flex", flexDirection: "column"}}>
+            <Toolbar 
+                sx={{
+                    display: { sm: 'none' }
+                }}
+            />
             {showForm ? (
                 isSaving ? (
                     <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", mt: 5 }}>

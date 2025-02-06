@@ -14,6 +14,7 @@ import {
     TableRow,
     TableCell,
     TableBody,
+    Toolbar,
 } from "@mui/material";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
@@ -82,7 +83,12 @@ const EventDetails = () => {
     }
 
     return (
-        <Box sx={{ p: 3 }}>
+        <Box>
+            <Toolbar 
+                sx={{
+                    display: { sm: 'none' }
+                }}
+            />
             <Typography variant="h4" gutterBottom>
                 Event Details
             </Typography>
@@ -161,6 +167,38 @@ const EventDetails = () => {
                         }}
                         sx={{ mb: 2 }}
                     />
+                    <TextField
+                        label="Registration Link"
+                        value={`${import.meta.env.VITE_API_URL}/register/${eventData.id}`}
+                        slotProps={{
+                            input: {
+                              readOnly: true,
+                              endAdornment: (
+                                  <Button
+                                      onClick={() => {
+                                          navigator.clipboard.writeText(`${import.meta.env.VITE_API_URL}/register/${eventData.id}`);
+                                          alert("Link copied to clipboard");
+                                      }}
+                                      size="small"
+                                  >
+                                      Copy
+                                  </Button>
+                              ),
+                            },
+                          }}
+                        fullWidth
+                        size="small"
+                        sx={{ mb: 2 }}
+                    />
+                    <Button
+                        variant="outlined"
+                        color="secondary"
+                        onClick={() =>
+                            window.open(`${import.meta.env.VITE_API_URL}/register/${eventData.id}`, "_blank")
+                        }
+                    >
+                        Go to Registration Link
+                    </Button>
                 </Box>
             </Paper>
 
