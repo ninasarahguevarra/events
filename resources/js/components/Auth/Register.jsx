@@ -53,6 +53,7 @@ const Register = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [errors, setErrors] = useState({});
     const [showModal, setShowModal] = useState(false);
+    const [formCompleted, setFormCompleted] = useState(true);
 
     // useEffect(() => {
     //     // Example auth check logic
@@ -85,6 +86,21 @@ const Register = () => {
 
     const handleChange = (field, value) => {
         setFormData({ ...formData, [field]: value });
+        
+        
+        // Real-time validation for the specific field
+        setErrors((prevErrors) => {
+            const newErrors = {
+                ...prevErrors,
+                [field]: !value, // Remove error if the field is filled
+            };
+    
+            // Check if all required fields are now filled
+            const hasErrors = Object.values(newErrors).some((error) => error);
+            setFormCompleted(!hasErrors);
+    
+            return newErrors;
+        });
     };
 
     const resetForm = () => {
@@ -139,6 +155,7 @@ const Register = () => {
         
         if (validate()) {
             setIsSaving(true);
+            setFormCompleted(true);
             try {
                 await apiClient.post(`/api/registrants/save`, formData);
                 resetForm();
@@ -149,6 +166,8 @@ const Register = () => {
             } finally {
                 setIsSaving(false);
             }
+        } else {
+            setFormCompleted(false);
         }
     };
 
@@ -772,6 +791,16 @@ const Register = () => {
                 <Grid2 container spacing={2} rowSpacing={2}>
                     {/* <Grid2 size={{ xs: 12, md: 6 }} offset={{ xs: 0, md: 3}}> */}
                     <Grid2 size={{ xs: 12}} sx={{mt:2}}>
+                        {!formCompleted &&
+                            <>
+                                <Typography color="error" variant="caption" align="center" component="p" sx={{fontSize: {sm:12, md: 14}}}>
+                                    Please ensure all required fields are completed to successfully submit the registration form.
+                                </Typography>
+                                <Typography color="error" variant="caption" align="center" component="p" sx={{mb:1, fontSize: {sm:12, md: 14}}}>
+                                    Check the form above to complete the registration.
+                                </Typography>
+                            </>
+                        }
                         <Button
                             fullWidth
                             type="submit"
