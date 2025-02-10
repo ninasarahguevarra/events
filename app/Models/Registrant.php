@@ -59,6 +59,7 @@ class Registrant extends Model
         'is_agree_privacy',
         'agree_to_be_contacted',
         'is_attended',
+        'is_csv_uploaded',
     ];
 
     protected function casts(): array
@@ -91,6 +92,7 @@ class Registrant extends Model
             'is_agree_privacy' => 'boolean',
             'agree_to_be_contacted' => 'boolean',
             'is_attended' => 'boolean',
+            'is_csv_uploaded' => 'boolean',
         ];
     }
 
@@ -101,8 +103,8 @@ class Registrant extends Model
         'last_name' => 'nullable|string',
         'name' => 'required|string',
         'preferred_name' => 'nullable|string',
-        'email' => 'required|string',
-        'gender' => 'required|string',
+        'email' => 'nullable|string',
+        'gender' => 'nullable|string',
         'company' => 'nullable|string',
         'company_address' => 'nullable|string',
         'position' => 'nullable|string',
@@ -122,6 +124,7 @@ class Registrant extends Model
         'is_agree_privacy' => 'required|boolean',
         'agree_to_be_contacted' => 'boolean',
         'is_attended' => 'boolean',
+        'is_csv_uploaded' => 'boolean'
     ];
 
     public static function validate(array $data)

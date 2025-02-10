@@ -10,6 +10,7 @@ const EventForm = ({ onSubmit, onCancel }) => {
         description: "",
         location: "",
         date: dayjs(), // Default to the current date and time
+        end_date: null,
     });
 
     const [errors, setErrors] = useState({ name: false, date: false });
@@ -22,6 +23,10 @@ const EventForm = ({ onSubmit, onCancel }) => {
     const handleDateChange = (newDate) => {
         setEventData({ ...eventData, date: newDate });
         setErrors({ ...errors, date: false });
+    };
+
+    const handleEndDateChange = (newDate) => {
+        setEventData({ ...eventData, end_date: newDate });
     };
 
     const validate = () => {
@@ -41,6 +46,7 @@ const EventForm = ({ onSubmit, onCancel }) => {
                 description: eventData.description,
                 location: eventData.location,
                 date: eventData.date.toISOString(), // Format date to ISO string for the API
+                end_date: eventData.end_date ? eventData.end_date.toISOString() : null, // Format date to ISO string for the API
             });
         }
     };
@@ -98,23 +104,54 @@ const EventForm = ({ onSubmit, onCancel }) => {
                     size="small"
                     sx={{ mb: 2 }}
                 />
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DateTimePicker
-                        label="Date"
-                        value={eventData.date}
-                        onChange={handleDateChange}
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                fullWidth
-                                size="small"
-                                sx={{ mb: 2 }}
-                                error={errors.date}
-                                helperText={errors.date ? "Date is required." : ""}
-                            />
-                        )}
-                    />
-                </LocalizationProvider>
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: 'baseline',
+                        columnGap: 2,
+                    }}
+                >
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DateTimePicker
+                            label="Date"
+                            value={eventData.date}
+                            onChange={handleDateChange}
+                            sx={{
+                                width: '100%'
+                            }}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    fullWidth
+                                    size="small"
+                                    sx={{ mb: 2 }}
+                                    error={errors.date}
+                                    helperText={errors.date ? "Date is required." : ""}
+                                />
+                            )}
+                        />
+                    </LocalizationProvider>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DateTimePicker
+                            label="End Date"
+                            value={eventData.end_date}
+                            onChange={handleEndDateChange}
+                            sx={{
+                                width: '100%'
+                            }}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    fullWidth
+                                    size="small"
+                                    sx={{ mb: 2 }}
+                                />
+                            )}
+                        />
+                    </LocalizationProvider>
+                </Box>
                 <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
                     <Button variant="outlined" onClick={onCancel}>
                         Cancel

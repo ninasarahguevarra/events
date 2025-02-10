@@ -18,6 +18,7 @@ class Event extends Model
         'description', 
         'location', 
         'date',
+        'end_date',
         'status',
         'deleted_at'
     ];
@@ -27,6 +28,7 @@ class Event extends Model
         'description' => 'string', 
         'location' => 'string',  
         'date' => 'datetime', 
+        'end_date' => 'datetime', 
         'status' => 'string', 
         'deleted_at' => 'date', 
     ];
@@ -36,6 +38,7 @@ class Event extends Model
         'description' => 'nullable|string',
         'location' => 'nullable|string',
         'date' => 'required|date',
+        'end_date' => 'nullable|date',
         'status' => 'required|string',
         'deleted_at' => 'nullable|date',
     ];

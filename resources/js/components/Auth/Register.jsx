@@ -190,7 +190,7 @@ const Register = () => {
                         <strong>Location:</strong> {eventData.location}
                     </Typography>
                     <Typography variant="body1">
-                        <strong>Date:</strong> {new Date(eventData.date).toLocaleDateString()}
+                        <strong>Date:</strong> {`${new Date(eventData.date).toLocaleDateString()}${eventData.end_date ? ' - ' + new Date(eventData.end_date).toLocaleDateString() : ''}`}
                     </Typography>
                 </Card>
             ) : (

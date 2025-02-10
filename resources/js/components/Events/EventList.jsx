@@ -70,7 +70,8 @@ const EventList = () => {
                         <TableRow>
                             <TableCell>Name</TableCell>
                             <TableCell>Description</TableCell>
-                            <TableCell>Date</TableCell>
+                            <TableCell>Start Date</TableCell>
+                            <TableCell>End Date</TableCell>
                             <TableCell>Location</TableCell>
                             {/* <TableCell>Status</TableCell> */}
                             <TableCell>Action</TableCell>
@@ -82,6 +83,7 @@ const EventList = () => {
                                 <TableCell>{event.name}</TableCell>
                                 <TableCell>{event.description}</TableCell>
                                 <TableCell>{dayjs(event.date).tz('Asia/Manila').format('MM-DD-YYYY h:mm A')}</TableCell>
+                                <TableCell>{event.end_date ? dayjs(event.end_date).tz('Asia/Manila').format('MM-DD-YYYY h:mm A') : '-'}</TableCell>
                                 <TableCell>{event.location}</TableCell>
                                 {/* <TableCell>{event.status}</TableCell> */}
                                 <TableCell>

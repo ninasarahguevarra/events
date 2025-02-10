@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class EventController extends Controller
 {
@@ -56,6 +57,7 @@ class EventController extends Controller
                 'description' => $request->description,
                 'location' => $request->location,
                 'date' => $request->date,
+                'end_date' => $request->end_date,
                 'status' => $this->determineStatus($request->date),
             ];
             
@@ -116,6 +118,7 @@ class EventController extends Controller
                 'description' => $request->description,
                 'location' => $request->location,
                 'date' => $request->date,
+                'end_date' => $request->end_date,
                 'status' => $this->determineStatus($request->date),
             ];
             Event::validate($eventData);
@@ -178,6 +181,12 @@ class EventController extends Controller
     }
 
     public function setEventAttendees(Request $request) {
+        
+        return response()->json([
+                    'success' => true,
+                    'message' => 'QR code cannot be scanned. Event has already ended.',
+                ], 200);    
+        
         DB::beginTransaction();
         try {
             $event = Event::find($request->event_id);
@@ -345,5 +354,19 @@ class EventController extends Controller
             Log::error('Error in destroy method: ' . $e->getMessage());
             return response()->json(['error' => 'Unable to soft delete event'], 500);
         }
+    }
+
+    public function downloadCsvTemplate()
+    {
+        $filePath = 'format.csv';
+        $fileName = 'format.csv';
+        if (!Storage::exists($filePath)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'File not found.'
+            ], 404);
+        }
+
+        return Storage::download($filePath, $fileName);
     }
 }

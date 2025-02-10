@@ -12,6 +12,7 @@ Route::post('/login', [UserController::class, 'login']);
 
 Route::prefix('registrants')->group(function () {
     Route::post('/save', [RegistrantController::class, 'saveRegistrant']);
+    Route::post('/upload/{eventId}', [RegistrantController::class, 'uploadBulkRegistration']);
 });
 
 //mobile app scanning
@@ -42,6 +43,7 @@ Route::middleware('auth:api')->group(function () {
         Route::delete('/destroy/{id}', [EventController::class, 'destroy']);
         Route::get('/current-event', [EventController::class, 'showCurrentEvent']);
         Route::get('/show-top-companies', [EventController::class, 'showTopCompanies']);
+        Route::get('/download-csv', [EventController::class, 'downloadCsvTemplate']);
     });
     
     Route::prefix('attendees')->group(function () {
