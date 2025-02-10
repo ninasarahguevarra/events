@@ -15,8 +15,8 @@ import {
     TableCell,
     TableBody,
     Toolbar,
-    Input,
-    Modal
+    Modal,
+    Grid2
 } from "@mui/material";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
@@ -61,6 +61,7 @@ const EventDetails = () => {
     const [tabIndex, setTabIndex] = useState(0);
     const [uploaded, setUploaded] = useState(false);
     const [showModal, setShowModal] = useState(false);
+    const [errors, setErrors] = useState({ name: false, date: false });
     dayjs.extend(utc);
     dayjs.extend(timezone);
 
@@ -96,6 +97,13 @@ const EventDetails = () => {
             ...prev,
             [field]: value,
         }));
+
+        setErrors((prevErrors) => (
+            {
+                ...prevErrors,
+                [field]: !value,
+            }
+        ));
     };
 
     const handleUpload = async (file) => {
@@ -138,18 +146,28 @@ const EventDetails = () => {
         }
     };
     
+    const validate = () => {
+        const newErrors = {
+            name: !eventData.name.trim(),
+        };
+        setErrors(newErrors);
+        return !Object.values(newErrors).some((error) => error);
+    };
+
 
     const handleUpdate = async () => {
-        try {
-            const response = await apiClient.post(`/api/events/update/${id}`, {
-                ...eventData,
-                registrants,
-            });
-            if (response.data.success) {
-                navigate("/events");
+        if (validate()) {
+            try {
+                const response = await apiClient.post(`/api/events/update/${id}`, {
+                    ...eventData,
+                    registrants,
+                });
+                if (response.data.success) {
+                    navigate("/events");
+                }
+            } catch (error) {
+                console.error("Error updating event:", error);
             }
-        } catch (error) {
-            console.error("Error updating event:", error);
         }
     };
 
@@ -178,14 +196,11 @@ const EventDetails = () => {
                         onChange={(e) =>
                             handleInputChange("name", e.target.value)
                         }
-                        slotProps={{
-                            input: {
-                                readOnly: true,
-                            },
-                        }}
                         fullWidth
                         size="small"
                         sx={{ mb: 2 }}
+                        error={errors.name}
+                        helperText={errors.name ? "Name is required." : ""}
                     />
                     <TextField
                         label="Location"
@@ -193,11 +208,6 @@ const EventDetails = () => {
                         onChange={(e) =>
                             handleInputChange("location", e.target.value)
                         }
-                        slotProps={{
-                            input: {
-                                readOnly: true,
-                            },
-                        }}
                         fullWidth
                         size="small"
                         sx={{ mb: 2 }}
@@ -208,11 +218,6 @@ const EventDetails = () => {
                         onChange={(e) =>
                             handleInputChange("description", e.target.value)
                         }
-                        slotProps={{
-                            input: {
-                                readOnly: true,
-                            },
-                        }}
                         fullWidth
                         multiline
                         rows={2}
@@ -241,125 +246,136 @@ const EventDetails = () => {
                                         .toISOString()
                                 )
                             }
-                            slotProps={{
-                                input: {
-                                    readOnly: true,
-                                },
-                            }}
                             size="small"
                             InputLabelProps={{
                                 shrink: true,
                             }}
                             sx={{ mb: 2, width: '50%' }}
                         />
-                        { eventData.end_date &&
+                        <TextField
+                            label="End Date"
+                            type="datetime-local"
+                            value={dayjs(eventData.end_date)
+                                .tz(manilaTimeZone)
+                                .format("YYYY-MM-DDTHH:mm")}
+                            onChange={(e) =>
+                                handleInputChange(
+                                    "end_date",
+                                    dayjs
+                                        .tz(e.target.value, manilaTimeZone)
+                                        .toISOString()
+                                )
+                            }
+                            size="small"
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                            sx={{ mb: 2, width: '50%' }}
+                        />
+                    </Box>
+
+                    <Grid2 container spacing={2} rowSpacing={2}>
+                        <Grid2 item size={{ xs: 6, md: 8 }}>
                             <TextField
-                                label="End Date"
-                                type="datetime-local"
-                                value={dayjs(eventData.end_date)
-                                    .tz(manilaTimeZone)
-                                    .format("YYYY-MM-DDTHH:mm")}
-                                onChange={(e) =>
-                                    handleInputChange(
-                                        "end_date",
-                                        dayjs
-                                            .tz(e.target.value, manilaTimeZone)
-                                            .toISOString()
-                                    )
-                                }
+                                label="Registration Link"
+                                value={`${import.meta.env.VITE_API_URL}/register/${
+                                    eventData.id
+                                }`}
                                 slotProps={{
                                     input: {
+                                        fullWidth: false,
                                         readOnly: true,
+                                        endAdornment: (
+                                            <Button
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(
+                                                        `${
+                                                            import.meta.env.VITE_API_URL
+                                                        }/register/${eventData.id}`
+                                                    );
+                                                    alert("Link copied to clipboard");
+                                                }}
+                                                size="small"
+                                            >
+                                                Copy
+                                            </Button>
+                                        ),
                                     },
                                 }}
+                                fullWidth
                                 size="small"
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                                sx={{ mb: 2, width: '50%' }}
                             />
-                        }
-                    </Box>
+                        </Grid2>
+
+                        <Grid2 item size={{ xs: 6, md: 4 }}>
+                            <Button
+                                variant="outlined"
+                                color="secondary"
+                                fullWidth
+                                onClick={() =>
+                                    window.open(
+                                        `${import.meta.env.VITE_API_URL}/register/${
+                                            eventData.id
+                                        }`,
+                                        "_blank"
+                                    )
+                                }
+                            >
+                                Go to Registration Link
+                            </Button>
+                        </Grid2>
+
+                        <Grid2 item size={{ xs: 6, md: 3 }}>
+                            <Button
+                                component="label"
+                                fullWidth
+                                variant="outlined"
+                                color="secondary"
+                                sx={{ mr: 2 }}
+                                startIcon={<CloudDownloadIcon />}
+                                onClick={handleDownload} // Attach the function
+                            >
+                                Download CSV Format
+                            </Button>
+                        </Grid2>
+
+                        <Grid2 item size={{ xs: 6, md: 3 }}>
+                            <Button
+                                loading
+                                fullWidth
+                                loadingPosition="end"
+                                component="label"
+                                variant="contained"
+                                tabIndex={-1}
+                                startIcon={<CloudUploadIcon />}
+                            >
+                                Upload Csv
+                                <VisuallyHiddenInput
+                                    type="file"
+                                    onChange={handleFileChange}
+                                    multiple
+                                />
+                            </Button>
+                        </Grid2>
+                    </Grid2>
+
                     <Box
                         sx={{
                             display: "flex",
-                            flexDirection: "row",
-                            // justifyContent: "flex-start",
-                            alignItems: 'baseline',
-                            columnGap: 2,
+                            justifyContent: "end",
+                            gap: 2,
+                            mt: 6,
                         }}
                     >
-                        <TextField
-                            label="Registration Link"
-                            value={`${import.meta.env.VITE_API_URL}/register/${
-                                eventData.id
-                            }`}
-                            slotProps={{
-                                input: {
-                                    fullWidth: false,
-                                    readOnly: true,
-                                    endAdornment: (
-                                        <Button
-                                            onClick={() => {
-                                                navigator.clipboard.writeText(
-                                                    `${
-                                                        import.meta.env.VITE_API_URL
-                                                    }/register/${eventData.id}`
-                                                );
-                                                alert("Link copied to clipboard");
-                                            }}
-                                            size="small"
-                                        >
-                                            Copy
-                                        </Button>
-                                    ),
-                                },
-                            }}
-                            fullWidth
-                            size="small"
-                            sx={{ mb: 2, width: '50%', flexGrow: 1  }}
-                        />
                         <Button
                             variant="outlined"
                             color="secondary"
-                            onClick={() =>
-                                window.open(
-                                    `${import.meta.env.VITE_API_URL}/register/${
-                                        eventData.id
-                                    }`,
-                                    "_blank"
-                                )
-                            }
+                            onClick={() => navigate("/events")}
                         >
-                            Go to Registration Link
+                            Cancel
                         </Button>
-                    </Box>
-                    <Box>
-                        <Button
-                            component="label"
-                            variant="outlined"
-                            color="secondary"
-                            sx={{ mr: 2 }}
-                            startIcon={<CloudDownloadIcon />}
-                            onClick={handleDownload} // Attach the function
-                        >
-                            Download CSV Format
-                        </Button>
-
-                        <Button
-                            loading
-                            loadingPosition="end"
-                            component="label"
-                            variant="contained"
-                            tabIndex={-1}
-                            startIcon={<CloudUploadIcon />}
-                        >
-                            Upload Csv
-                            <VisuallyHiddenInput
-                                type="file"
-                                onChange={handleFileChange}
-                                multiple
-                            />
+                        <Button variant="contained" color="primary" onClick={handleUpdate}>
+                            Save Changes
                         </Button>
                     </Box>
                 </Box>
@@ -423,14 +439,11 @@ const EventDetails = () => {
             <Box
                 sx={{
                     display: "flex",
-                    justifyContent: "center",
+                    justifyContent: "end",
                     gap: 2,
                     mt: 3,
                 }}
             >
-                {/* <Button variant="contained" color="primary" onClick={handleUpdate}>
-                    Save Changes
-                </Button> */}
                 <Button
                     variant="outlined"
                     color="secondary"
