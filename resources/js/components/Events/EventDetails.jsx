@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { apiClient } from "../../utils/authUtils";
 import {
@@ -7,16 +7,9 @@ import {
     Button,
     Typography,
     Paper,
-    Tab,
-    Tabs,
-    Table,
-    TableHead,
-    TableRow,
-    TableCell,
-    TableBody,
     Toolbar,
     Modal,
-    Grid2
+    Grid2,
 } from "@mui/material";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
@@ -24,6 +17,8 @@ import timezone from "dayjs/plugin/timezone";
 import { styled } from '@mui/material/styles';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import IdLayout from './IdLayout';
+import EventsRegistrants from './EventsRegistrants';
 
 const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -58,23 +53,21 @@ const EventDetails = () => {
     const [eventData, setEventData] = useState(null);
     const [registrants, setRegistrants] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [tabIndex, setTabIndex] = useState(0);
     const [uploaded, setUploaded] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [errors, setErrors] = useState({ name: false, date: false });
+    const [openDrawer, setOpenDrawer] = useState(false);
     dayjs.extend(utc);
     dayjs.extend(timezone);
-
     const manilaTimeZone = "Asia/Manila";
+    const fileInputRef = useRef(null); 
 
     useEffect(() => {
         const fetchEventDetails = async () => {
             try {
                 const response = await apiClient.get(`/api/events/show/${id}`);
-                const { event, registrant } = response.data.data;
-                setEventData(event);
-
-                setRegistrants(registrant);
+                const { data } = response.data;
+                setEventData(data);
                 setLoading(false);
             } catch (error) {
                 console.error("Error fetching event details:", error);
@@ -84,6 +77,11 @@ const EventDetails = () => {
         fetchEventDetails();
     }, [id, uploaded]);
 
+    const handleButtonClick = () => {
+        if (fileInputRef.current) {
+            fileInputRef.current.click();
+        }
+    };
 
     const handleFileChange = (event) => {
         const selectedFile = event.target.files[0];
@@ -158,10 +156,7 @@ const EventDetails = () => {
     const handleUpdate = async () => {
         if (validate()) {
             try {
-                const response = await apiClient.post(`/api/events/update/${id}`, {
-                    ...eventData,
-                    registrants,
-                });
+                const response = await apiClient.post(`/api/events/update/${id}`, eventData);
                 if (response.data.success) {
                     navigate("/events");
                 }
@@ -170,9 +165,6 @@ const EventDetails = () => {
             }
         }
     };
-
-    const filteredRegistrants =
-        tabIndex === 1 ? registrants.filter((r) => r.is_attended) : registrants;
 
     if (loading) {
         return <Typography>Loading...</Typography>;
@@ -189,269 +181,217 @@ const EventDetails = () => {
                 Event Details
             </Typography>
             <Paper sx={{ p: 3, mb: 3 }}>
-                <Box>
+                <TextField
+                    label="Event Name"
+                    value={eventData.name}
+                    onChange={(e) =>
+                        handleInputChange("name", e.target.value)
+                    }
+                    fullWidth
+                    size="small"
+                    sx={{ mb: 2 }}
+                    error={errors.name}
+                    helperText={errors.name ? "Name is required." : ""}
+                />
+                <TextField
+                    label="Location"
+                    value={eventData.location}
+                    onChange={(e) =>
+                        handleInputChange("location", e.target.value)
+                    }
+                    fullWidth
+                    size="small"
+                    sx={{ mb: 2 }}
+                />
+                <TextField
+                    label="Description"
+                    value={eventData.description}
+                    onChange={(e) =>
+                        handleInputChange("description", e.target.value)
+                    }
+                    fullWidth
+                    multiline
+                    rows={2}
+                    sx={{ mb: 2 }}
+                />
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: 'baseline',
+                        columnGap: 2,
+                    }}
+                >
                     <TextField
-                        label="Event Name"
-                        value={eventData.name}
+                        label={eventData.end_date ? "Start Date" : "Date"}
+                        type="datetime-local"
+                        value={dayjs(eventData.date)
+                            .tz(manilaTimeZone)
+                            .format("YYYY-MM-DDTHH:mm")}
                         onChange={(e) =>
-                            handleInputChange("name", e.target.value)
+                            handleInputChange(
+                                "date",
+                                dayjs
+                                    .tz(e.target.value, manilaTimeZone)
+                                    .toISOString()
+                            )
                         }
-                        fullWidth
                         size="small"
-                        sx={{ mb: 2 }}
-                        error={errors.name}
-                        helperText={errors.name ? "Name is required." : ""}
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                        sx={{ mb: 2, width: '50%' }}
                     />
                     <TextField
-                        label="Location"
-                        value={eventData.location}
+                        label="End Date"
+                        type="datetime-local"
+                        value={dayjs(eventData.end_date)
+                            .tz(manilaTimeZone)
+                            .format("YYYY-MM-DDTHH:mm")}
                         onChange={(e) =>
-                            handleInputChange("location", e.target.value)
+                            handleInputChange(
+                                "end_date",
+                                dayjs
+                                    .tz(e.target.value, manilaTimeZone)
+                                    .toISOString()
+                            )
                         }
-                        fullWidth
                         size="small"
-                        sx={{ mb: 2 }}
-                    />
-                    <TextField
-                        label="Description"
-                        value={eventData.description}
-                        onChange={(e) =>
-                            handleInputChange("description", e.target.value)
-                        }
-                        fullWidth
-                        multiline
-                        rows={2}
-                        sx={{ mb: 2 }}
-                    />
-                    <Box
-                        sx={{
-                            display: "flex",
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                            alignItems: 'baseline',
-                            columnGap: 2,
+                        InputLabelProps={{
+                            shrink: true,
                         }}
+                        sx={{ mb: 2, width: '50%' }}
+                    />
+                </Box>
+
+                <Box
+                    sx={{
+                        display: "flex",
+                        justifyContent: "end",
+                        gap: 2,
+                    }}
+                >
+                    <Button
+                        variant="outlined"
+                        color="secondary"
+                        onClick={() => navigate("/events")}
                     >
-                        <TextField
-                            label={eventData.end_date ? "Start Date" : "Date"}
-                            type="datetime-local"
-                            value={dayjs(eventData.date)
-                                .tz(manilaTimeZone)
-                                .format("YYYY-MM-DDTHH:mm")}
-                            onChange={(e) =>
-                                handleInputChange(
-                                    "date",
-                                    dayjs
-                                        .tz(e.target.value, manilaTimeZone)
-                                        .toISOString()
-                                )
-                            }
-                            size="small"
-                            InputLabelProps={{
-                                shrink: true,
-                            }}
-                            sx={{ mb: 2, width: '50%' }}
-                        />
-                        <TextField
-                            label="End Date"
-                            type="datetime-local"
-                            value={dayjs(eventData.end_date)
-                                .tz(manilaTimeZone)
-                                .format("YYYY-MM-DDTHH:mm")}
-                            onChange={(e) =>
-                                handleInputChange(
-                                    "end_date",
-                                    dayjs
-                                        .tz(e.target.value, manilaTimeZone)
-                                        .toISOString()
-                                )
-                            }
-                            size="small"
-                            InputLabelProps={{
-                                shrink: true,
-                            }}
-                            sx={{ mb: 2, width: '50%' }}
-                        />
-                    </Box>
-
-                    <Grid2 container spacing={2} rowSpacing={2}>
-                        <Grid2 item size={{ xs: 6, md: 8 }}>
-                            <TextField
-                                label="Registration Link"
-                                value={`${import.meta.env.VITE_API_URL}/register/${
-                                    eventData.id
-                                }`}
-                                slotProps={{
-                                    input: {
-                                        fullWidth: false,
-                                        readOnly: true,
-                                        endAdornment: (
-                                            <Button
-                                                onClick={() => {
-                                                    navigator.clipboard.writeText(
-                                                        `${
-                                                            import.meta.env.VITE_API_URL
-                                                        }/register/${eventData.id}`
-                                                    );
-                                                    alert("Link copied to clipboard");
-                                                }}
-                                                size="small"
-                                            >
-                                                Copy
-                                            </Button>
-                                        ),
-                                    },
-                                }}
-                                fullWidth
-                                size="small"
-                            />
-                        </Grid2>
-
-                        <Grid2 item size={{ xs: 6, md: 4 }}>
-                            <Button
-                                variant="outlined"
-                                color="secondary"
-                                fullWidth
-                                onClick={() =>
-                                    window.open(
-                                        `${import.meta.env.VITE_API_URL}/register/${
-                                            eventData.id
-                                        }`,
-                                        "_blank"
-                                    )
-                                }
-                            >
-                                Go to Registration Link
-                            </Button>
-                        </Grid2>
-
-                        <Grid2 item size={{ xs: 6, md: 3 }}>
-                            <Button
-                                component="label"
-                                fullWidth
-                                variant="outlined"
-                                color="secondary"
-                                sx={{ mr: 2 }}
-                                startIcon={<CloudDownloadIcon />}
-                                onClick={handleDownload} // Attach the function
-                            >
-                                Download CSV Format
-                            </Button>
-                        </Grid2>
-
-                        <Grid2 item size={{ xs: 6, md: 3 }}>
-                            <Button
-                                loading
-                                fullWidth
-                                loadingPosition="end"
-                                component="label"
-                                variant="contained"
-                                tabIndex={-1}
-                                startIcon={<CloudUploadIcon />}
-                            >
-                                Upload Csv
-                                <VisuallyHiddenInput
-                                    type="file"
-                                    onChange={handleFileChange}
-                                    multiple
-                                />
-                            </Button>
-                        </Grid2>
-                    </Grid2>
-
-                    <Box
-                        sx={{
-                            display: "flex",
-                            justifyContent: "end",
-                            gap: 2,
-                            mt: 6,
-                        }}
-                    >
-                        <Button
-                            variant="outlined"
-                            color="secondary"
-                            onClick={() => navigate("/events")}
-                        >
-                            Cancel
-                        </Button>
-                        <Button variant="contained" color="primary" onClick={handleUpdate}>
-                            Save Changes
-                        </Button>
-                    </Box>
+                        Cancel
+                    </Button>
+                    <Button variant="contained" color="primary" onClick={handleUpdate}>
+                        Save Changes
+                    </Button>
                 </Box>
             </Paper>
 
-            {/* Tabs for Registrants */}
-            <Paper sx={{ mb: 3 }}>
-                <Tabs
-                    value={tabIndex}
-                    onChange={(_, newIndex) => setTabIndex(newIndex)}
-                    indicatorColor="primary"
-                    textColor="primary"
-                    centered
-                >
-                    <Tab label="Registrants" />
-                    <Tab label="Attendees" />
-                </Tabs>
-                {registrants.length > 0 ? (
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>#</TableCell>
-                                <TableCell>Name</TableCell>
-                                <TableCell>Email</TableCell>
-                                <TableCell>Company</TableCell>
-                                <TableCell>Position</TableCell>
-                                <TableCell>Attended</TableCell>
-                                {tabIndex === 1 && <TableCell>Date</TableCell>}
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {filteredRegistrants.map((registrant, index) => (
-                                <TableRow key={registrant.id}>
-                                    <TableCell>{index + 1}</TableCell>
-                                    <TableCell>{registrant.name}</TableCell>
-                                    <TableCell>{registrant.email}</TableCell>
-                                    <TableCell>{registrant.company}</TableCell>
-                                    <TableCell>{registrant.position}</TableCell>
-                                    <TableCell>
-                                        {registrant.is_attended ? "Yes" : "No"}
-                                    </TableCell>
-                                    {tabIndex === 1 && (
-                                        <TableCell>
-                                            {dayjs(registrant.updated_at)
-                                                .tz(manilaTimeZone)
-                                                .format("MM-DD-YYYY h:mm A")}
-                                        </TableCell>
-                                    )}
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                ) : (
-                    <Typography sx={{ textAlign: "center", mt: 3, p: 3 }}>
-                        No registrants yet for this event.
-                    </Typography>
-                )}
+            <Typography variant="h4" gutterBottom>
+                Registration Details
+            </Typography>
+            <Paper sx={{ p: 3, mb: 3 }}>
+                <Grid2 container spacing={2} rowSpacing={2}>
+                    <Grid2 item size={{ xs: 6, md: 8 }}>
+                        <TextField
+                            label="Registration Link"
+                            value={`${import.meta.env.VITE_API_URL}/register/${
+                                eventData.id
+                            }`}
+                            slotProps={{
+                                input: {
+                                    fullWidth: false,
+                                    readOnly: true,
+                                    endAdornment: (
+                                        <Button
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(
+                                                    `${
+                                                        import.meta.env.VITE_API_URL
+                                                    }/register/${eventData.id}`
+                                                );
+                                                alert("Link copied to clipboard");
+                                            }}
+                                            size="small"
+                                        >
+                                            Copy
+                                        </Button>
+                                    ),
+                                },
+                            }}
+                            fullWidth
+                            size="small"
+                        />
+                    </Grid2>
+
+                    <Grid2 item size={{ xs: 6, md: 4 }}>
+                        <Button
+                            variant="outlined"
+                            color="primary"
+                            fullWidth
+                            onClick={() =>
+                                window.open(
+                                    `${import.meta.env.VITE_API_URL}/register/${
+                                        eventData.id
+                                    }`,
+                                    "_blank"
+                                )
+                            }
+                        >
+                            Go to Registration Link
+                        </Button>
+                    </Grid2>
+
+                    <Grid2 item size={{ xs: 4, md: 4 }}>
+                        <Button
+                            component="label"
+                            fullWidth
+                            variant="outlined"
+                            color="primary"
+                            sx={{ mr: 2 }}
+                            startIcon={<CloudDownloadIcon />}
+                            onClick={handleDownload} // Attach the function
+                        >
+                            Download CSV Format
+                        </Button>
+                    </Grid2>
+
+                    <Grid2 item size={{ xs: 4, md: 4 }}>
+                        <Button
+                            loading
+                            fullWidth
+                            loadingPosition="end"
+                            variant="outlined"
+                            color="primary"
+                            onClick={handleButtonClick}
+                            tabIndex={-1}
+                            startIcon={<CloudUploadIcon />}
+                        >
+                            Upload Csv
+                            <VisuallyHiddenInput
+                                ref={fileInputRef}
+                                type="file"
+                                onChange={handleFileChange}
+                                multiple
+                            />
+                        </Button>
+                    </Grid2>
+
+                    <Grid2 item size={{ xs: 4, md: 4 }}>
+                        <Button
+                            loading
+                            fullWidth
+                            component="label"
+                            variant="outlined"
+                            color="primary"
+                            onClick={() => setOpenDrawer(true)}
+                        >
+                            ID Layout
+                        </Button>
+                    </Grid2>
+                </Grid2>
             </Paper>
 
-            {/* Save and Cancel Buttons */}
-            <Box
-                sx={{
-                    display: "flex",
-                    justifyContent: "end",
-                    gap: 2,
-                    mt: 3,
-                }}
-            >
-                <Button
-                    variant="outlined"
-                    color="secondary"
-                    onClick={() => navigate("/events")}
-                >
-                    Cancel
-                </Button>
-            </Box>
+            {/* Tabs for Registrants */}
+            <EventsRegistrants uploaded={uploaded} />
 
             {/* Success Modal */}
             <Modal
@@ -479,6 +419,8 @@ const EventDetails = () => {
                     </Button>
                 </Box>
             </Modal>
+
+            <IdLayout openDrawer={openDrawer} setOpenDrawer={setOpenDrawer}  />
         </Box>
     );
 };

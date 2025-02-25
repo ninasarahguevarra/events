@@ -44,6 +44,8 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/current-event', [EventController::class, 'showCurrentEvent']);
         Route::get('/show-top-companies', [EventController::class, 'showTopCompanies']);
         Route::get('/download-csv', [EventController::class, 'downloadCsvTemplate']);
+        Route::post('/id/save', [EventController::class, 'saveIdLayout']);
+        Route::get('/id/fetch', [EventController::class, 'fetchIdLayout']);
     });
     
     Route::prefix('attendees')->group(function () {

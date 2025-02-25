@@ -325,16 +325,9 @@ class EventController extends Controller
             throw new \Exception("No existing event.");
         }
 
-        $registrants = Registrant::where('event_id', $id)->get();
-        
-        $data = [
-            'event' => $event->fresh(),
-            'registrant' => $registrants ?? null,
-        ];
-
         return response()->json([
             'success' => true,
-            'data' => $data,
+            'data' => $event,
             'message' => "Event details successfully retrieved",
         ]);
 
@@ -368,5 +361,97 @@ class EventController extends Controller
         }
 
         return Storage::download($filePath, $fileName);
+    }
+
+    public function saveIdLayout(Request $request)
+    {
+        try {
+            $validatedData = $request->validate([
+                'event_id' => 'required',
+                // 'bgimage' => 'required|file|mimes:jpg,jpeg,png|max:2048',
+                'layout' => 'required',
+            ]);
+        
+            $layout = json_decode($request->layout, true);
+
+            if (!is_array($layout)) {
+                return response()->json(['error' => 'The layout field must be an array.'], 400);
+            }
+            $event = Event::find($request->event_id);
+
+            if (!$event) {
+                return response()->json([
+                    'error' => 'No event found!',
+                ], 404);
+            }
+
+            $bgImagePath = $event->id_layout['bgimage'] ?? null;
+
+            if ($request->hasFile('bgimage')) {
+                // Delete the old image if it exists
+                if ($bgImagePath && Storage::disk('public')->exists(str_replace(asset('storage/'), '', $bgImagePath))) {
+                    Storage::disk('public')->delete(str_replace(asset('storage/'), '', $bgImagePath));
+                }
+
+                $newImagePath = $request->file('bgimage')->store("id/bg/{$request->event_id}", 'public');
+                // $bgImagePath = asset("storage/$newImagePath");
+                $bgImagePath = $newImagePath;
+            }
+
+
+            // Save Data
+            $event->id_layout = [
+                'bgimage' => $bgImagePath,
+                'layout' => $layout, // Now it's an array
+            ];
+            $event->save();
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Id layout Saved!',
+                'data' => $event->id_layout
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error updating events id layout: ' . $e->getMessage(), [
+                'exception' => $e,
+                'file'      => $e->getFile(),
+                'line'      => $e->getLine(),
+                'trace'     => $e->getTraceAsString(),
+                'payload'   => $request->all(),
+            ]);
+
+            return response()->json([
+                'error' => 'Error updating events id layout.',
+                'details' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ], 500);
+        }
+    }
+
+    public function fetchIdLayout(Request $request)
+    {
+        $event = Event::find($request->event_id);
+        if (!$event) {
+            return response()->json([
+                'error' => 'No event found!',
+            ], 404);
+        }
+
+        $url = null;
+        if (isset($event->id_layout['bgimage'])) {
+            $url = Storage::url($event->id_layout['bgimage']);
+        }
+
+        $data = [
+            'layout' => $event->id_layout['layout'] ?? null,
+            'bgimage' => $url
+        ];
+        
+        return response()->json([
+            'message' => 'Id layout fetch!',
+            'data' => $data
+        ]);
     }
 }

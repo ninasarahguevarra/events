@@ -20,13 +20,13 @@ class RegistrantController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Registrant::query()->select('id', 'name', 'email')->where('event_id', $request->event_id);
+        $query = Registrant::query()->select('id', 'name', 'email', 'affiliation', 'printed', 'is_attended')->where('event_id', $request->event_id);
         $perPage = $request->input('per_page', 10);
         $users = $query->paginate($perPage);
 
         return response()->json([
             'success' => true,
-            'data'    => $users,
+            'registrants' => $users,
             'message' => "Users successfully retrieved!",
         ], 200);
     }
@@ -139,6 +139,7 @@ class RegistrantController extends Controller
                 'file'      => $e->getFile(),
                 'line'      => $e->getLine(),
                 'trace'     => $e->getTraceAsString(),
+                'payload'   => $request->all(),
             ]);
 
             return response()->json([
@@ -152,6 +153,7 @@ class RegistrantController extends Controller
     
     public function uploadBulkRegistration(Request $request, $eventId)
     {
+        // setlocale(LC_ALL, 'en_US.UTF-8'); 
         // Validate file input
         $validator = Validator::make($request->all(), [
             'csv_file' => 'required|mimes:csv,txt|max:2048'
@@ -175,6 +177,10 @@ class RegistrantController extends Controller
 
             while (($row = fgetcsv($handle, 1000, ',')) !== false) {
 
+                foreach ($row as &$field) {
+                    $field = trim(mb_convert_encoding($field, 'UTF-8', 'UTF-8'));
+                }
+
                 $is_agree_privacy = strtolower(trim($row[21]));
                 $is_agree_privacy = $is_agree_privacy == 'yes' || $is_agree_privacy === 'true';
                 $agree_to_be_contacted = strtolower(trim($row[22]));
@@ -191,30 +197,32 @@ class RegistrantController extends Controller
                     $is_ict_member = false;
                 }
 
+                $first_name = ucwords(strtolower(str_replace('?', 'ñ', trim($row[0]))));
+                $last_name = ucwords(strtolower(str_replace('?', 'ñ', trim($row[1]))));
                 $batchData[] = [
                     'id'                        => Str::uuid()->toString(),
                     'event_id'                  => $eventId,
-                    'first_name'                => trim($row[0]),
-                    'last_name'                 => trim($row[1]),
-                    'name'                      => trim($row[0]) . ' ' . trim($row[1]),
-                    'preferred_name'            => trim($row[2]),
-                    'email'                     => trim($row[4]),
+                    'first_name'                => $first_name,
+                    'last_name'                 => $last_name,
+                    'name'                      => $first_name . ' ' . $last_name,
+                    'preferred_name'            => str_replace('?', 'ñ', ucwords(strtolower(trim($row[2])))),
+                    'email'                     => strtolower(trim($row[4])),
                     'gender'                    => trim($row[3]),
                     'social_classification'     => trim($row[11]),
-                    'province'                  => trim($row[6]),
-                    'municipality'              => trim($row[7]),
-                    'position'                  => trim($row[9]),
-                    'affiliation'               => trim($row[8]),
+                    'province'                  => str_replace('?', 'ñ', trim($row[6])),
+                    'municipality'              => str_replace('?', 'ñ', trim($row[7])),
+                    'position'                  => str_replace('?', 'ñ', trim($row[9])),
+                    'affiliation'               => str_replace('?', 'ñ', trim($row[8])),
                     'sector'                    => trim($row[10]),
                     'industry'                  => trim($row[12]),
-                    'ict_council_name'          => $ict_council_name,
+                    'ict_council_name'          => str_replace('?', 'ñ', $ict_council_name),
                     'is_ict_interested'         => $is_ict_interested,
                     'is_ict_member'             => $is_ict_member,
                     'attendance_qualification'  => trim($row[16]),
                     'registration_type_id'      => trim($row[17]),
                     'shirt_size'                => trim($row[18]),
-                    'social_media'              => trim($row[19]),
-                    'website'                   => trim($row[20]),
+                    'social_media'              => str_replace('?', 'ñ', trim($row[19])),
+                    'website'                   => str_replace('?', 'ñ', trim($row[20])),
                     'contact_number'            => trim($row[5]),
                     'is_agree_privacy'          => $is_agree_privacy,
                     'agree_to_be_contacted'     => $agree_to_be_contacted,

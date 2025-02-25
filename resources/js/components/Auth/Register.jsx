@@ -52,6 +52,8 @@ const Register = () => {
     const [eventData, setEventData] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
     const [errors, setErrors] = useState({});
+    const [isRegistered, setIsRegistered] = useState(false);
+    const [responseMessage, setResponseMessage] = useState("Thank you for registering for the event. We look forward to seeing you!");
     const [showModal, setShowModal] = useState(false);
     const [formCompleted, setFormCompleted] = useState(true);
 
@@ -71,8 +73,8 @@ const Register = () => {
                 const response = await apiClient.get(
                     `/api/events/show/${id}`
                 );
-                const { event } = response.data.data;
-                setEventData(event);
+                const { data } = response.data;
+                setEventData(data);
             } catch (error) {
                 console.error("Error fetching event details:", error);
                 setEventData(null);
@@ -113,7 +115,11 @@ const Register = () => {
             first_name: !formData.first_name,
             last_name: !formData.last_name,
             gender: !formData.gender,
-            email: !formData.email,
+            email: !formData.email
+                ? "Email is required."
+                : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
+                ? "Please enter a valid email address."
+                : "",
             province: !formData.province,
             municipality: !formData.municipality,
             affiliation: !formData.affiliation,
@@ -142,14 +148,14 @@ const Register = () => {
         } else if (!/^\d{10,12}$/.test(formData.contact_number)) {
             newErrors.contact_number = "Please enter a valid mobile number (10-12 digits).";
         }
-        console.log("newErrors:", newErrors);
+        // console.log("newErrors:", newErrors);
 
         setErrors(newErrors);
 
         return !Object.values(newErrors).some((error) => error);
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async(e) => {
         e.preventDefault();
         // Validate and submit the form
         
@@ -157,14 +163,23 @@ const Register = () => {
             setIsSaving(true);
             setFormCompleted(true);
             try {
-                await apiClient.post(`/api/registrants/save`, formData);
-                resetForm();
-                window.scrollTo({ top: 0, behavior: "smooth" });
-                setShowModal(true);
+                const response = await apiClient.post(`/api/registrants/save`, formData);
+                if (response.status === 200) {
+                    resetForm();
+                    setIsRegistered(true)
+                    setResponseMessage("Thank you for registering for the event. We look forward to seeing you!")
+                } else {
+                    setIsRegistered(false)
+                }    
+                // setShowModal(true);
             } catch (error) {
-                console.error("Error in registration:", formData);
+                console.error("Error in registration:",  error?.response?.data?.details || error);
+                setResponseMessage(error?.response?.data?.details || "Error in registration, please try again later.")
+                setIsRegistered(false)
             } finally {
+                window.scrollTo({ top: 0, behavior: "smooth" });
                 setIsSaving(false);
+                setShowModal(true);
             }
         } else {
             setFormCompleted(false);
@@ -292,7 +307,7 @@ const Register = () => {
                                 variant="outlined"
                                 error={errors.email}
                                 value={formData.email || ""}
-                                helperText={errors.email ? "Email is required." : ""}
+                                helperText={errors.email}
                                 onChange={(e) =>
                                     handleChange("email", e.target.value)
                                 }
@@ -744,7 +759,7 @@ const Register = () => {
                             <FormControlLabel
                                 control={
                                     <Checkbox
-                                        value={formData.is_agree_privacy || false}
+                                        checked={formData.is_agree_privacy || false}
                                         onChange={(e) =>
                                             handleChange(
                                                 "is_agree_privacy",
@@ -771,7 +786,7 @@ const Register = () => {
                             <FormControlLabel
                                 control={
                                     <Checkbox
-                                        value={formData.agree_to_be_contacted || false}
+                                        checked={formData.agree_to_be_contacted || false}
                                         onChange={(e) =>
                                             handleChange(
                                                 "agree_to_be_contacted",
@@ -825,12 +840,12 @@ const Register = () => {
                         id="success-modal-title"
                         variant="h6"
                         sx={{ mb: 2 }}
-                        color="success.main"
+                        color={isRegistered ? "success.main" : "error.main"}
                     >
-                        Registration Successful!
+                        {isRegistered ? 'Registration Successful!' : 'Registration Unsuccessful!'}
                     </Typography>
                     <Typography id="success-modal-description" variant="body2">
-                        Thank you for registering for the event. We look forward to seeing you!
+                        {responseMessage}
                     </Typography>
                     <Button
                         variant="contained"
