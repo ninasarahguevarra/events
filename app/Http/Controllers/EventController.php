@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Facades\Image;
 
 class EventController extends Controller
 {
@@ -362,7 +363,7 @@ class EventController extends Controller
 
         return Storage::download($filePath, $fileName);
     }
-
+    
     public function saveIdLayout(Request $request)
     {
         try {
@@ -453,5 +454,140 @@ class EventController extends Controller
             'message' => 'Id layout fetch!',
             'data' => $data
         ]);
+    }
+
+    public function generateImages(Request $request)
+    {
+    
+        
+        $event = Event::find($request->event_id);
+        
+        $eventData = [
+            "bgimage" => "storage/".$event->id_layout['bgimage'],
+            "layout" => $event->id_layout['layout']
+            ];
+            
+            
+        $perPage = 50; 
+        $page = max(1, (int) $request->page); 
+        $offset = ($page - 1) * $perPage;
+
+        $registrants = Registrant::select(
+            'id',
+            DB::raw("CONCAT(first_name, ' ', last_name) AS name"),
+            'affiliation'
+        )
+        ->where('event_id', $request->event_id)
+        ->offset($offset)
+        ->limit($perPage)
+        ->get();
+        
+        $images = [];
+        $outputDir = public_path('generated_images');
+
+        if (!file_exists($outputDir)) {
+            mkdir($outputDir, 0777, true);
+        }
+
+        foreach ($registrants as $data) {
+            $bgPath = public_path($eventData['bgimage']);
+
+            if (!file_exists($bgPath)) {
+                return response()->json(['error' => 'Background image not found: ' . $bgPath], 404);
+            }
+
+            $img = Image::make($bgPath)->resize(638, 1012, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            });
+
+            $fontPath = public_path('fonts/arial/ARIBLK.TTF');
+            
+            $yPlus = 0;
+
+            foreach ($eventData['layout'] as $item){
+                if ($item['type'] === 'name' || $item['type'] === 'organization') {
+                    $text = ($item['type'] === 'name') ? $data['name'] : $data['affiliation'];
+                    $maxFontSize = round($item['size'] * 2.5);
+                    $minFontSize = 20;
+                    $maxWidth = $img->width() - 80; // 40px padding on each side
+                    $fontSize = $maxFontSize;
+
+                    // Adjust font size only if text exceeds max width
+                    while ($this->getTextWidth($text, $fontSize, $fontPath) > $maxWidth && $fontSize > $minFontSize) {
+                        $fontSize -= 1;
+                    }
+
+                    $xPos = $img->width() / 2;  
+                    $yPos = $yPlus + round($item['position']['y'] * 2.5);
+                    $yPlus += $maxFontSize;
+                    
+                    $img->text($text, $xPos, $yPos, function ($font) use ($fontSize, $item, $fontPath) {
+                        $font->file($fontPath);
+                        $font->size($fontSize);
+                        $font->color($item['color'] === 'white' ? '#fff' : '#000');
+                        $font->align('center');
+                        $font->valign('top');
+                    });
+                }
+            }
+
+            // Generate QR code
+            foreach ($eventData['layout'] as $item) {
+                if ($item['type'] === 'qrcode') {
+                    $qrCodePath = storage_path('app/temp_qrcode.png');
+                    file_put_contents($qrCodePath, QrCode::format('png')->size(round($item['size'] * 2.5))->generate($data['id']));
+
+                    if (!file_exists($qrCodePath)) {
+                        return response()->json(['error' => 'QR code generation failed'], 500);
+                    }
+
+                    $qrImage = Image::make($qrCodePath)->resize(round($item['size'] * 2.5), round($item['size'] * 2.5));
+                    $img->insert($qrImage, 'top-left', round($item['position']['x'] * 2.5), round($item['position']['y'] * 2.5) + $yPlus);
+
+                    unlink($qrCodePath);
+                }
+            }
+
+            $fileName = strtolower(str_replace(' ', '_', $data['name'])) . '.png';
+            $filePath = $outputDir . '/' . $fileName;
+            $img->save($filePath);
+
+            $images[] = $filePath;
+        }
+
+        // Create ZIP file
+            $zipFileName = str_replace(' ', '_', $event->name) . '_generated_images_' . ($offset + 1) . '-' . ($offset + 50) . '.zip';
+            $zipPath = public_path($zipFileName);
+
+            $zip = new \ZipArchive();
+            if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === true) {
+                foreach ($images as $file) {
+                    $relativeName = basename($file);
+                    $zip->addFile($file, $relativeName);
+                }
+                $zip->close();
+            }
+            
+            // Delete generated images after zipping
+            foreach ($images as $file) {
+                if (file_exists($file)) {
+                    unlink($file);
+                }
+            }
+
+
+            return response()->json([
+                'zip_url' => url($zipFileName)
+            ]);
+    }
+
+    /**
+     * Helper function to measure text width dynamically.
+     */
+    private function getTextWidth($text, $fontSize, $fontPath)
+    {
+        $box = imagettfbbox($fontSize, 0, $fontPath, $text);
+        return abs($box[4] - $box[0]);
     }
 }

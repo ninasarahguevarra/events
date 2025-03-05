@@ -15,7 +15,9 @@ import {
     TableBody,
     TablePagination,
     Fab,
-    Tooltip
+    Tooltip,
+    CircularProgress,
+    Modal
 } from "@mui/material";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
@@ -24,16 +26,20 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import { saveAs } from "file-saver";
 import Papa from "papaparse";
 
-const EventsRegistrants = ({uploaded}) => {
+const EventsRegistrants = ({uploaded, modalStyle}) => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [registrants, setRegistrants] = useState([]);
     const [loading, setLoading] = useState(true);
     const [tabIndex, setTabIndex] = useState(0);
+    const [isDownloadingList, setIsDownloadingList] = useState(false);
+    const [isDownloadingIDs, setIsDownloadingIDs] = useState(false);
+    const [showModal, setShowModal] = useState(false);
 
     // Pagination states
     const [page, setPage] = useState(0); // Current page (0-based index)
     const [rowsPerPage, setRowsPerPage] = useState(50); // Default 50 per page
+    const [printIdLabel, setPrintIdLabel] = useState('1 - 50'); // Default 50 per page
     const [totalRegistrants, setTotalRegistrants] = useState(0); // Total count from API
 
     dayjs.extend(utc);
@@ -41,6 +47,8 @@ const EventsRegistrants = ({uploaded}) => {
     const manilaTimeZone = "Asia/Manila";
 
     useEffect(() => {
+        const label = ((page * rowsPerPage) + 1) + ' - ' + ((page + 1) * rowsPerPage);
+        setPrintIdLabel(label);
         const fetchRegistrants = async () => {
             setLoading(true);
             try {
@@ -58,13 +66,22 @@ const EventsRegistrants = ({uploaded}) => {
         fetchRegistrants();
     }, [id, page, rowsPerPage, uploaded]);
 
-    const printID = (registrant) => {
-        console.log("Printing ID for:", registrant);
-        // Add logic to generate ID with saved layout
+    const printID = async () => {
+        setIsDownloadingIDs(true);
+        const response = await apiClient.get(`/api/events/generate-images?event_id=${id}&page=${page + 1}`);
+        console.log(response);
+        
+        if (response.status == 200) {
+            window.location.href = response.data.zip_url;
+        } else {
+            setShowModal(true)
+        }
+        setIsDownloadingIDs(false);
     };
 
     const handleDownloadCSV = async () => {
         try {
+            setIsDownloadingList(true);
             const response = await apiClient.get(`/api/registrants?event_id=${id}&per_page=2042`);
             const { data } = response.data.registrants;
     
@@ -83,9 +100,11 @@ const EventsRegistrants = ({uploaded}) => {
     
             // Trigger download
             saveAs(blob, "registrants_list.csv");
+            setIsDownloadingList(false);
     
         } catch (error) {
             console.error("Download failed:", error);
+            setIsDownloadingList(false);
         }
     };
 
@@ -135,13 +154,16 @@ const EventsRegistrants = ({uploaded}) => {
                         top: 0,
                     }}
                 >
-
-                    <Button variant="outlined" color="secondary" onClick={handleDownloadCSV}>
-                        Download list
-                    </Button>
-                    <Button variant="contained" color="primary" onClick={printID}>
-                        Print IDs
-                    </Button>
+                    {
+                        tabIndex === 0 && <>
+                            <Button variant="outlined" color="secondary" sx={{minWidth: '148px', height: '36.5px'}} onClick={handleDownloadCSV}>
+                                {isDownloadingList ? <CircularProgress size={20} /> : "Download list"}
+                            </Button>
+                            <Button variant="contained" color="primary" sx={{minWidth: '190px', height: '36.5px'}} onClick={printID}>
+                                {isDownloadingIDs ? <CircularProgress size={20} color="inherit" /> : `Download IDs (${printIdLabel})`}
+                            </Button>
+                        </>
+                    }
                 </Box>
                 </Box>
 
@@ -154,7 +176,6 @@ const EventsRegistrants = ({uploaded}) => {
                                     <TableCell>Name</TableCell>
                                     <TableCell>Email</TableCell>
                                     <TableCell>Organization</TableCell>
-                                    <TableCell>Printed</TableCell>
                                     <TableCell>Attended</TableCell>
                                     {tabIndex === 1 && <TableCell>Date</TableCell>}
                                 </TableRow>
@@ -166,7 +187,6 @@ const EventsRegistrants = ({uploaded}) => {
                                         <TableCell>{registrant.name}</TableCell>
                                         <TableCell>{registrant.email}</TableCell>
                                         <TableCell>{registrant.affiliation}</TableCell>
-                                        <TableCell>{registrant.printed ? "Yes" : "No"}</TableCell>
                                         <TableCell>{registrant.is_attended ? "Yes" : "No"}</TableCell>
                                         {tabIndex === 1 && (
                                             <TableCell>
@@ -188,7 +208,7 @@ const EventsRegistrants = ({uploaded}) => {
                             onPageChange={handleChangePage}
                             rowsPerPage={rowsPerPage}
                             onRowsPerPageChange={handleChangeRowsPerPage}
-                            rowsPerPageOptions={[50, 100]}
+                            rowsPerPageOptions={[50]}
                         />
                     </>
                 ) : (
@@ -205,6 +225,32 @@ const EventsRegistrants = ({uploaded}) => {
                     </Fab>
                 </Tooltip>
             </Box>
+
+            <Modal
+                open={showModal}
+                onClose={() => setShowModal(false)}
+                aria-labelledby="success-modal-title"
+                aria-describedby="success-modal-description"
+            >
+                <Box sx={modalStyle}>
+                    <Typography
+                        id="success-modal-title"
+                        variant="h6"
+                        sx={{ mb: 2 }}
+                        color="error.main"
+                    >
+                        Error in downloading zip file
+                    </Typography>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => setShowModal(false)}
+                        sx={{ mt: 3 }}
+                    >
+                        Close
+                    </Button>
+                </Box>
+            </Modal>
         </>
     );
 };

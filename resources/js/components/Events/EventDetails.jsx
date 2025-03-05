@@ -15,8 +15,8 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import { styled } from '@mui/material/styles';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import IdLayout from './IdLayout';
 import EventsRegistrants from './EventsRegistrants';
 
@@ -347,7 +347,7 @@ const EventDetails = () => {
                             variant="outlined"
                             color="primary"
                             sx={{ mr: 2 }}
-                            startIcon={<CloudDownloadIcon />}
+                            startIcon={<FileDownloadIcon />}
                             onClick={handleDownload} // Attach the function
                         >
                             Download CSV Format
@@ -363,7 +363,7 @@ const EventDetails = () => {
                             color="primary"
                             onClick={handleButtonClick}
                             tabIndex={-1}
-                            startIcon={<CloudUploadIcon />}
+                            startIcon={<FileUploadIcon />}
                         >
                             Upload Csv
                             <VisuallyHiddenInput
@@ -391,7 +391,7 @@ const EventDetails = () => {
             </Paper>
 
             {/* Tabs for Registrants */}
-            <EventsRegistrants uploaded={uploaded} />
+            <EventsRegistrants uploaded={uploaded} modalStyle={modalStyle} />
 
             {/* Success Modal */}
             <Modal
@@ -405,7 +405,7 @@ const EventDetails = () => {
                         id="success-modal-title"
                         variant="h6"
                         sx={{ mb: 2 }}
-                        color="success.main"
+                        color={uploaded ? "success.main" : "error.main"}
                     >
                         {uploaded ? 'Bulk Registration Successful!' : 'Failed to bulk register'}
                     </Typography>

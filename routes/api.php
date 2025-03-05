@@ -13,12 +13,14 @@ Route::post('/login', [UserController::class, 'login']);
 Route::prefix('registrants')->group(function () {
     Route::post('/save', [RegistrantController::class, 'saveRegistrant']);
     Route::post('/upload/{eventId}', [RegistrantController::class, 'uploadBulkRegistration']);
+    Route::delete('/destroy/{id}', [RegistrantController::class, 'destroy']);
 });
 
 //mobile app scanning
 Route::prefix('events')->group(function () {
     Route::post('/set-attendee', [EventController::class, 'setEventAttendees']);
     Route::get('/show/{id}', [EventController::class, 'showEvent']);
+    Route::get('/generate-images', [EventController::class, 'generateImages']);
 });
 
 //mobile app fetching
@@ -39,7 +41,6 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/', [EventController::class, 'index']);
         Route::post('/save', [EventController::class, 'saveEvent']);
         Route::post('/update/{id}', [EventController::class, 'updateEvent']);
-        // Route::get('/show/{id}', [EventController::class, 'showEvent']);
         Route::delete('/destroy/{id}', [EventController::class, 'destroy']);
         Route::get('/current-event', [EventController::class, 'showCurrentEvent']);
         Route::get('/show-top-companies', [EventController::class, 'showTopCompanies']);

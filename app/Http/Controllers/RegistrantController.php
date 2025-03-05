@@ -94,7 +94,7 @@ class RegistrantController extends Controller
             Registrant::validate($data);
             
             $event = Event::find($request->event_id)->toArray();
-            $event['date'] = Carbon::parse($event['date'])->toDateString();
+            $event['date'] = Carbon::parse($event['date'])->format('M, d Y');
             $event['end_date'] = Carbon::parse($event['end_date'])->format('M, d Y');
             
             $registrant = Registrant::updateOrCreate(
@@ -153,7 +153,7 @@ class RegistrantController extends Controller
     
     public function uploadBulkRegistration(Request $request, $eventId)
     {
-        // setlocale(LC_ALL, 'en_US.UTF-8'); 
+        // setlocale(LC_ALL, 'en_US.UTF-8');
         // Validate file input
         $validator = Validator::make($request->all(), [
             'csv_file' => 'required|mimes:csv,txt|max:2048'
@@ -258,7 +258,7 @@ class RegistrantController extends Controller
             return response()->json(['success' => false, 'error' => 'Something went wrong.', 'details' => $e->getMessage()], 500);
         }
     }
-
+    
     public function attendees(Request $request)
     {
         $query = Registrant::query()->select('id', 'name', 'email','updated_at')
@@ -275,7 +275,7 @@ class RegistrantController extends Controller
         ], 200);
     }
     
-     public function forPrinting(Request $request)
+    public function forPrinting(Request $request)
     {
         
         $query = Registrant::query()->select('id', 'name', 'email')
@@ -307,5 +307,18 @@ class RegistrantController extends Controller
             'success' => true,
             'data' => $genderData,
         ]);
+    }
+    
+    public function destroy($id)
+    {
+        try {
+            $registrant = Registrant::findOrFail($id);
+            $registrant->delete();
+
+            return response()->json(['message' => 'Registrant soft deleted'], 200);
+        } catch (\Exception $e) {
+            Log::error('Error in destroy method: ' . $e->getMessage());
+            return response()->json(['error' => 'Unable to soft delete registrant'], 500);
+        }
     }
 }
