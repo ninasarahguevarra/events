@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class EventController extends Controller
 {
@@ -291,6 +292,7 @@ class EventController extends Controller
         try {
             $topCompaniesData = Registrant::where('is_attended', true)
                 ->whereNotNull('company')
+                ->where('event_id',8)
                 ->selectRaw('company, COUNT(*) as attendee_count')
                 ->groupBy('company')
                 ->orderBy('attendee_count', 'desc')

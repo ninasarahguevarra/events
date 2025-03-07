@@ -296,7 +296,7 @@ class RegistrantController extends Controller
     {
         $registrantCounts = Registrant::selectRaw('gender, COUNT(*) as count')
             ->groupBy('gender')
-            ->where('event_id', 1)
+            ->where('event_id', 2)
             ->get();
     
         $genderData = $registrantCounts->mapWithKeys(function ($item) {
@@ -306,6 +306,23 @@ class RegistrantController extends Controller
         return response()->json([
             'success' => true,
             'data' => $genderData,
+        ]);
+    }
+    
+    public function fetchRegistrantByProvince(Request $request)
+    {
+        $registrantCounts = Registrant::selectRaw('province, COUNT(*) as count')
+            ->groupBy('province')
+            ->where('event_id', 2)
+            ->get();
+    
+        $provinceData = $registrantCounts->mapWithKeys(function ($item) {
+            return [$item->province => $item->count];
+        });
+    
+        return response()->json([
+            'success' => true,
+            'data' => $provinceData,
         ]);
     }
     

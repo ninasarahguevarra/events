@@ -11,6 +11,7 @@ import {
     ListItemText,
     Button,
     Toolbar,
+    Select, MenuItem, FormControl
 } from "@mui/material";
 import EventIcon from "@mui/icons-material/Event";
 import CorporateFareIcon from "@mui/icons-material/CorporateFare";
@@ -29,6 +30,16 @@ const Dashboard = () => {
     const [count, setCount] = useState(null);
     const [topCompanies, setTopCompanies] = useState([]);
     const [genderData, setGenderData] = useState(null);
+    const [provinceData, setProvinceData] = useState(null);
+    const [eventList, setEventList] = useState([
+        {id: 1, name: "17th NICP National ICT Summit and e-Gov Awards 2025"},
+        {id: 2, name: "Mindanao ICT Conference 2025"},
+    ]);
+    
+    const handleChange = (event) => {
+        // setEventList(event.target.value);
+    };
+
     const navigate = useNavigate();
     dayjs.extend(utc);
     dayjs.extend(timezone);
@@ -60,7 +71,10 @@ const Dashboard = () => {
                 const response = await apiClient.get(
                     `/api/events/show-top-companies`
                 );
-                setTopCompanies(response.data.data);
+                if(response.data.data){
+                    setTopCompanies(response.data.data);        
+                }
+                
             } catch (error) {
                 console.error("Error fetching top companies:", error);
             }
@@ -74,10 +88,21 @@ const Dashboard = () => {
                 console.error("Error fetching gender data:", error);
             }
         };
+        
+       const fetchProvinceData = async () => {
+            try {
+                const response = await apiClient.get('/api/registrants/by-province');
+                setProvinceData(response.data.data);
+            } catch (error) {
+                console.error("Error fetching province data:", error);
+            }
+        };
+        
 
         fetchEventDetails();
         fetchTopCompanies();
         fetchGenderData();
+        fetchProvinceData();
     }, []);
 
     const topCompaniesChartOptions = {
@@ -96,7 +121,7 @@ const Dashboard = () => {
             enabled: false,
         },
         xaxis: {
-            categories: topCompanies.map((company) => company.company),
+            categories: topCompanies ? topCompanies.map((company) => company.company) : [],
         },
         colors: ["#1E88E5"],
     };
@@ -104,7 +129,7 @@ const Dashboard = () => {
     const topCompaniesChartSeries = [
         {
             name: "Attendees",
-            data: topCompanies.map((company) => company.attendee_count),
+            data: topCompanies ? topCompanies.map((company) => company.attendee_count) : [],
         },
     ];
 
@@ -114,13 +139,43 @@ const Dashboard = () => {
             height: 350,
         },
         labels: genderData ? Object.keys(genderData) : [],
-        colors: ['#FF4560', '#1E88E5'], // Custom colors for Male/Female
+        // colors: ['#FF4560', '#1E88E5',], // Custom colors for Male/Female
     };
     
     const genderChartSeries = genderData
         ? Object.values(genderData)
         : [];
 
+
+   const provinceChartOptions = {
+        chart: {
+            type: "bar",
+            height: 350,
+        },
+        plotOptions: {
+            bar: {
+                horizontal: false,
+                columnWidth: "50%",
+                endingShape: "rounded",
+            },
+        },
+        dataLabels: {
+            enabled: false,
+        },
+        xaxis: {
+            categories: provinceData ? Object.keys(provinceData) : [],
+        },
+        colors: ["#1E88E5"],
+    };
+
+    const provinceChartSeries = [
+        {
+            name: "Registrants",
+            data: provinceData ? Object.values(provinceData) : []
+        },
+    ];
+    
+    console.log(provinceData)
 
     return (
         <Box>
@@ -134,22 +189,49 @@ const Dashboard = () => {
             </Typography>
             {event ? (
                 <>
-                    <Typography variant="h6" sx={{ mb: 1 }}>
-                        <EventIcon sx={{ verticalAlign: "middle", mr: 1 }} />
-                        {event.name}
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                        Location: {event.location} | Date:{" "}
-                        {new Date(event.date).toLocaleDateString()}
-                    </Typography>
-                    <Typography
-                        variant="body2"
-                        color="textSecondary"
-                        sx={{ mb: 2 }}
-                    >
-                        Total Attendees: {attendees.length} out of {count}{" "}
-                        registrants
-                    </Typography>
+                <Grid2 container spacing={{md: 3, sm: 2,  xs: 1}}>
+                    <Grid2 item size={{ xs: 12, sm: 6, md: 8 }}>
+                        <Typography variant="h6" sx={{ mb: 1 }}>
+                            <EventIcon sx={{ verticalAlign: "middle", mr: 1 }} />
+                            {event.name}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                            Location: {event.location} | Date:{" "}
+                            {new Date(event.date).toLocaleDateString()}
+                        </Typography>
+                        <Typography
+                            variant="body2"
+                            color="textSecondary"
+                            sx={{ mb: 2 }}
+                        >
+                            Total Attendees: {attendees.length} out of {count}{" "}
+                            registrants
+                        </Typography>
+                    </Grid2>
+                    <Grid2 item size={{ xs: 12, sm: 6, md: 4 }}>
+                        {eventList.length > 0 && (
+                            <>
+                                <Typography variant="caption">
+                                    Select Event
+                                </Typography>
+                                
+                                <FormControl sx={{minWidth: 120, display: 'flex' }} size="small">
+                                    <Select
+                                        labelId="select-event-label"
+                                        id="select-event"
+                                        value={event}
+                                        onChange={handleChange}
+                                    >
+                                        {eventList.map((event) => (
+                                            <MenuItem value={event.id}>{event.name}</MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            </>
+                        )}
+                    </Grid2>
+
+                </Grid2>
                     <Divider sx={{ my: 3 }} />
 
                     <Grid2 container spacing={3}>
@@ -221,39 +303,71 @@ const Dashboard = () => {
                                     </Button>
                                 </CardContent>
                             </Card>
-                        </Grid2>
-
-                        <Grid2 item size={{ xs: 12, md: 6 }}>
-                            {topCompanies.length > 0 ? (
-                                <Card sx={{ mb: 3 }}>
+                            
+                            
+                                <Card sx={{ mb: 3, minHeight:'350px'}}>
                                     <CardContent>
                                         <Typography variant="h6" sx={{ mb: 2 }}>
-                                            <CorporateFareIcon
+                                            <GroupIcon
                                                 sx={{
                                                     verticalAlign: "middle",
                                                     mr: 1,
                                                 }}
                                             />
-                                            Top Companies by Attendee Count
+                                            Registrants by Province 
                                         </Typography>
+                                        {provinceData ? (
+                                        <Chart
+                                            options={provinceChartOptions}
+                                            series={provinceChartSeries}
+                                            type="bar"
+                                            height={350}
+                                        />
+                                        ) : (
+                                            <Typography
+                                                variant="body1"
+                                                color="textSecondary"
+                                            >
+                                                No province data to show
+                                            </Typography>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                        </Grid2>
+
+                        <Grid2 item size={{ xs: 12, md: 6 }}>
+                            <Card sx={{ mb: 3, minHeight:'350px' }}>
+                                <CardContent>
+                                    <Typography variant="h6" sx={{ mb: 2 }}>
+                                        <CorporateFareIcon
+                                            sx={{
+                                                verticalAlign: "middle",
+                                                mr: 1,
+                                            }}
+                                        />
+                                        Top Companies by Attendee Count
+                                    </Typography>
+                                    {topCompanies.length > 0 ? (
                                         <Chart
                                             options={topCompaniesChartOptions}
                                             series={topCompaniesChartSeries}
                                             type="bar"
                                             height={350}
                                         />
-                                    </CardContent>
-                                </Card>
-                            ) : (
-                                <Typography
-                                    variant="body1"
-                                    color="textSecondary"
-                                >
-                                    Loading top companies data...
-                                </Typography>
-                            )}
+                                  
+                                    ) : (
+                                        <Typography
+                                            variant="body1"
+                                            color="textSecondary"
+                                            align="center"
+                                            >
+                                            No top companies data to show
+                                        </Typography>
+                                    )}
+                              </CardContent>
+                            </Card>
 
-                            <Card sx={{ mb: 3 }}>
+                            <Card sx={{ mb: 3, minHeight:'350px' }}>
                                 <CardContent>
                                     <Typography variant="h6" sx={{ mb: 2 }}>
                                         <WcIcon
@@ -275,8 +389,9 @@ const Dashboard = () => {
                                         <Typography
                                             variant="body1"
                                             color="textSecondary"
+                                            align="center"
                                         >
-                                            Loading gender data...
+                                            No gender data to show 
                                         </Typography>
                                     )}
                                 </CardContent>
