@@ -15,6 +15,14 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class EventController extends Controller
 {
+    
+    private $closestEvent;
+
+    public function __construct()
+    {
+        $this->closestEvent = Event::orderByRaw('ABS(TIMESTAMPDIFF(SECOND, date, NOW()))')->first();
+    }
+    
     public function index(Request $request)
     {
         // $query = SavedFile::withTrashed(); // Include soft-deleted records by default
@@ -183,15 +191,9 @@ class EventController extends Controller
     }
 
     public function setEventAttendees(Request $request) {
-        
-        return response()->json([
-                    'success' => true,
-                    'message' => 'QR code cannot be scanned. Event has already ended.',
-                ], 200);    
-        
         DB::beginTransaction();
         try {
-            $event = Event::find($request->event_id);
+            $event = Event::find($this->closestEvent->id);
 
             if (!$event) {
                 throw new \Exception("No existing event.");
@@ -215,8 +217,6 @@ class EventController extends Controller
 
             if (!$registrant['is_attended']) {
                 $list = [
-                    'id' => $registrant['id'],
-                    'event_id' => $request->event_id,
                     'is_attended' => true
                 ];
     
@@ -252,12 +252,13 @@ class EventController extends Controller
         }
     }
 
-    public function showCurrentEvent() {
+    public function showCurrentEvent(Request $request) {
         $now = now();
-        $currentEvent = Event::where('date', '<=', $now)
-            ->orWhereBetween('date', [$now->startOfDay(), $now->endOfDay()])
-            ->orderBy('date', 'asc')
-            ->first();
+        if($request->eventId){
+            $currentEvent = Event::where('id', $request->eventId)->first();
+        } else{
+            $currentEvent = $this->closestEvent;
+        } 
     
         if (!$currentEvent) {
             $currentEvent = Event::where('date', '>', $now)->orderBy('date')->first();
@@ -287,12 +288,12 @@ class EventController extends Controller
         ]);
     }
 
-    public function showTopCompanies()
+    public function showTopCompanies(Request $request)
     {
         try {
             $topCompaniesData = Registrant::where('is_attended', true)
                 ->whereNotNull('company')
-                ->where('event_id',8)
+                ->where('event_id', $request->eventId ? $request->eventId : $this->closestEvent->id)
                 ->selectRaw('company, COUNT(*) as attendee_count')
                 ->groupBy('company')
                 ->orderBy('attendee_count', 'desc')
@@ -302,6 +303,7 @@ class EventController extends Controller
             if ($topCompaniesData->isEmpty()) {
                 return response()->json([
                     'success' => false,
+                    'data' => [],
                     'message' => 'No attended registrants found.',
                 ]);
             }

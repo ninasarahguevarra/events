@@ -15,9 +15,19 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use App\Models\Event;
 use Carbon\Carbon;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class RegistrantController extends Controller
 {
+    
+    private $closestEvent;
+
+    public function __construct()
+    {
+        $this->closestEvent = Event::orderByRaw('ABS(TIMESTAMPDIFF(SECOND, date, NOW()))')->first();
+    }
+    
+    
     public function index(Request $request)
     {
         $query = Registrant::query()->select('id', 'name', 'email', 'affiliation', 'printed', 'is_attended')->where('event_id', $request->event_id);
@@ -262,7 +272,7 @@ class RegistrantController extends Controller
     public function attendees(Request $request)
     {
         $query = Registrant::query()->select('id', 'name', 'email','updated_at')
-        ->where('event_id',1)
+        ->where('event_id', $this->closestEvent->id)
         ->where('is_attended',1)
         ->orderBy('updated_at','desc')
         ->get();
@@ -296,11 +306,11 @@ class RegistrantController extends Controller
     {
         $registrantCounts = Registrant::selectRaw('gender, COUNT(*) as count')
             ->groupBy('gender')
-            ->where('event_id', 2)
+            ->where('event_id', $request->eventId ? $request->eventId : $this->closestEvent->id)
             ->get();
     
         $genderData = $registrantCounts->mapWithKeys(function ($item) {
-            return [$item->gender => $item->count];
+            return [empty($item->gender) ? 'Not Provided' : $item->gender => $item->count];
         });
     
         return response()->json([
@@ -313,11 +323,11 @@ class RegistrantController extends Controller
     {
         $registrantCounts = Registrant::selectRaw('province, COUNT(*) as count')
             ->groupBy('province')
-            ->where('event_id', 2)
+            ->where('event_id', $request->eventId ? $request->eventId : $this->closestEvent->id)
             ->get();
     
         $provinceData = $registrantCounts->mapWithKeys(function ($item) {
-            return [$item->province => $item->count];
+            return [empty($item->province) ? 'Not Provided' : $item->province => $item->count];
         });
     
         return response()->json([
@@ -326,6 +336,160 @@ class RegistrantController extends Controller
         ]);
     }
     
+    public function fetchRegistrantByMunicipality(Request $request)
+    {
+        $registrantCounts = Registrant::selectRaw('municipality, COUNT(*) as count')
+            ->groupBy('municipality')
+            ->where('event_id', $request->eventId ? $request->eventId : $this->closestEvent->id)
+            ->get();
+    
+        $provinceData = $registrantCounts->mapWithKeys(function ($item) {
+            return [empty($item->municipality) ? 'Not Provided' : $item->municipality => $item->count];
+        });
+    
+        return response()->json([
+            'success' => true,
+            'data' => $provinceData,
+        ]);
+    }
+    
+    public function fetchRegistrantByAffiliation(Request $request)
+    {
+        $registrantCounts = Registrant::selectRaw('affiliation, COUNT(*) as count')
+            ->groupBy('affiliation')
+            ->where('event_id', $request->eventId ? $request->eventId : $this->closestEvent->id)
+            ->get();
+    
+        $provinceData = $registrantCounts->mapWithKeys(function ($item) {
+            return [empty($item->affiliation) ? 'Not Provided' : $item->affiliation => $item->count];
+        });
+    
+        return response()->json([
+            'success' => true,
+            'data' => $provinceData,
+        ]);
+    }
+    
+    public function fetchRegistrantBySector(Request $request)
+    {
+        $registrantCounts = Registrant::selectRaw('sector, COUNT(*) as count')
+            ->groupBy('sector')
+            ->where('event_id', $request->eventId ? $request->eventId : $this->closestEvent->id)
+            ->get();
+    
+        $provinceData = $registrantCounts->mapWithKeys(function ($item) {
+            return [empty($item->sector) ? 'Not Provided' : $item->sector => $item->count];
+        });
+    
+        return response()->json([
+            'success' => true,
+            'data' => $provinceData,
+        ]);
+    }
+    
+    public function fetchRegistrantBySocial(Request $request)
+    {
+        $registrantCounts = Registrant::selectRaw('social_classification, COUNT(*) as count')
+            ->groupBy('social_classification')
+            ->where('event_id', $request->eventId ? $request->eventId : $this->closestEvent->id)
+            ->get();
+    
+        $provinceData = $registrantCounts->mapWithKeys(function ($item) {
+            return [empty($item->social_classification) ? 'Not Provided' : $item->social_classification => $item->count];
+        });
+    
+        return response()->json([
+            'success' => true,
+            'data' => $provinceData,
+        ]);
+    }
+    
+    public function fetchRegistrantByIndustry(Request $request)
+    {
+        $registrantCounts = Registrant::selectRaw('industry, COUNT(*) as count')
+            ->groupBy('industry')
+            ->where('event_id', $request->eventId ? $request->eventId : $this->closestEvent->id)
+            ->get();
+    
+        $provinceData = $registrantCounts->mapWithKeys(function ($item) {
+            return [empty($item->industry) ? 'Not Provided' : $item->industry => $item->count];
+        });
+    
+        return response()->json([
+            'success' => true,
+            'data' => $provinceData,
+        ]);
+    }
+    
+    public function fetchRegistrantByAttendanceQualification(Request $request)
+    {
+        $registrantCounts = Registrant::selectRaw('attendance_qualification, COUNT(*) as count')
+            ->groupBy('attendance_qualification')
+            ->where('event_id', $request->eventId ? $request->eventId : $this->closestEvent->id)
+            ->get();
+    
+        $provinceData = $registrantCounts->mapWithKeys(function ($item) {
+            return [empty($item->attendance_qualification) ? 'Not Provided' : $item->attendance_qualification => $item->count];
+        });
+    
+        return response()->json([
+            'success' => true,
+            'data' => $provinceData,
+        ]);
+    }
+    
+    public function fetchRegistrantByShirt(Request $request)
+    {
+        $registrantCounts = Registrant::selectRaw('shirt_size, COUNT(*) as count')
+            ->groupBy('shirt_size')
+            ->where('event_id', $request->eventId ? $request->eventId : $this->closestEvent->id)
+            ->get();
+    
+        $provinceData = $registrantCounts->mapWithKeys(function ($item) {
+            return [empty($item->shirt_size) ? 'Not Provided' : $item->shirt_size => $item->count];
+        });
+    
+        return response()->json([
+            'success' => true,
+            'data' => $provinceData,
+        ]);
+    }
+    
+    public function fetchRegistrantByCouncil(Request $request)
+    {
+        $registrantCounts = Registrant::selectRaw('ict_council_name, COUNT(*) as count')
+            ->groupBy('ict_council_name')
+            ->where('event_id', $request->eventId ? $request->eventId : $this->closestEvent->id)
+            ->get();
+    
+        $provinceData = $registrantCounts->mapWithKeys(function ($item) {
+            return [empty($item->ict_council_name) ? 'Not Provided' : $item->ict_council_name => $item->count];
+        });
+    
+        return response()->json([
+            'success' => true,
+            'data' => $provinceData,
+        ]);
+    }
+
+    public function fetchRegistrantByRegType(Request $request)
+    {
+        $registrantCounts = Registrant::selectRaw('registration_types.description, COUNT(*) as count')
+            ->leftJoin('registration_types','registration_types.id_type','registrants.registration_type_id')
+            ->groupBy('description')
+            ->where('event_id', $request->eventId ? $request->eventId : $this->closestEvent->id)
+            ->get();
+    
+        $provinceData = $registrantCounts->mapWithKeys(function ($item) {
+            return [empty($item->description) ? 'Not Provided' : substr($item->description,0,65).'...' => $item->count];
+        });
+    
+        return response()->json([
+            'success' => true,
+            'data' => $provinceData,
+        ]);
+    }
+
     public function destroy($id)
     {
         try {
@@ -337,5 +501,16 @@ class RegistrantController extends Controller
             Log::error('Error in destroy method: ' . $e->getMessage());
             return response()->json(['error' => 'Unable to soft delete registrant'], 500);
         }
+    }
+    
+    public function downloadCsv(Request $request)
+    {
+            // Get data from DB
+            $users = Registrant::where('event_id', $request->eventId)->get(); // Use cursor for memory efficiency
+                return response()->json([
+                'success' => true,
+                'registrants' => $users,
+                'message' => "Users successfully retrieved!",
+            ], 200);
     }
 }

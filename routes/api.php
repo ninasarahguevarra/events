@@ -14,6 +14,7 @@ Route::prefix('registrants')->group(function () {
     Route::post('/save', [RegistrantController::class, 'saveRegistrant']);
     Route::post('/upload/{eventId}', [RegistrantController::class, 'uploadBulkRegistration']);
     Route::delete('/destroy/{id}', [RegistrantController::class, 'destroy']);
+    Route::get('/download-csv', [RegistrantController::class, 'downloadCsv']);
 });
 
 //mobile app scanning
@@ -36,6 +37,15 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/', [RegistrantController::class, 'index']);
         Route::get('/by-gender', [RegistrantController::class, 'fetchRegistrantByGender']);
         Route::get('/by-province', [RegistrantController::class, 'fetchRegistrantByProvince']);
+        Route::get('/by-municipality', [RegistrantController::class, 'fetchRegistrantByMunicipality']);
+        Route::get('/by-affiliation', [RegistrantController::class, 'fetchRegistrantByAffiliation']);
+        Route::get('/by-sector', [RegistrantController::class, 'fetchRegistrantBySector']);
+        Route::get('/by-social', [RegistrantController::class, 'fetchRegistrantBySocial']);
+        Route::get('/by-industry', [RegistrantController::class, 'fetchRegistrantByIndustry']);
+        Route::get('/by-attendance-qualification', [RegistrantController::class, 'fetchRegistrantByAttendanceQualification']);
+        Route::get('/by-shirt', [RegistrantController::class, 'fetchRegistrantByShirt']);
+        Route::get('/by-council', [RegistrantController::class, 'fetchRegistrantByCouncil']);
+        Route::get('/by-reg-type', [RegistrantController::class, 'fetchRegistrantByRegType']);
     });
     
     Route::prefix('events')->group(function () {
