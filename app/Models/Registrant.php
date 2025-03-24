@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 class Registrant extends Model
 {
     use HasFactory;
-
+    
     protected $table = 'registrants';
     protected $keyType = 'string';
     public $incrementing = false;
@@ -59,7 +59,7 @@ class Registrant extends Model
         'is_agree_privacy',
         'agree_to_be_contacted',
         'is_attended',
-        'is_csv_uploaded',
+        'is_csv_uploaded'
     ];
 
     protected function casts(): array
@@ -92,7 +92,7 @@ class Registrant extends Model
             'is_agree_privacy' => 'boolean',
             'agree_to_be_contacted' => 'boolean',
             'is_attended' => 'boolean',
-            'is_csv_uploaded' => 'boolean',
+            'is_csv_uploaded' => 'boolean'
         ];
     }
 
@@ -103,7 +103,7 @@ class Registrant extends Model
         'last_name' => 'nullable|string',
         'name' => 'required|string',
         'preferred_name' => 'nullable|string',
-        'email' => 'nullable|string',
+        'email' => 'required|string',
         'gender' => 'nullable|string',
         'company' => 'nullable|string',
         'company_address' => 'nullable|string',
@@ -119,9 +119,9 @@ class Registrant extends Model
         'shirt_size' => 'nullable|string',
         'social_media' => 'nullable|string',
         'website' => 'nullable|string',
-        'contact_number' => 'required|string',
+        'contact_number' => 'nullable|string',
         'score' => 'nullable|integer',
-        'is_agree_privacy' => 'required|boolean',
+        'is_agree_privacy' => 'nullable|boolean',
         'agree_to_be_contacted' => 'boolean',
         'is_attended' => 'boolean',
         'is_csv_uploaded' => 'boolean'
@@ -138,7 +138,7 @@ class Registrant extends Model
 
         return true;
     }
-
+    
     public function event()
     {
         return $this->belongsTo(Registrant::class, 'event_id', 'id');
