@@ -17,14 +17,40 @@ import {
     Fab,
     Tooltip,
     CircularProgress,
-    Modal
+    Modal,
+    IconButton
 } from "@mui/material";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import { FirstPage, LastPage, KeyboardArrowLeft, KeyboardArrowRight } from "@mui/icons-material";
 import { saveAs } from "file-saver";
 import Papa from "papaparse";
+
+const TablePaginationActions = ({ count, page, rowsPerPage, onPageChange }) => {
+    const handleFirstPage = () => onPageChange(null, 0);
+    const handleLastPage = () => onPageChange(null, Math.max(0, Math.ceil(count / rowsPerPage) - 1));
+    const handlePrevPage = () => onPageChange(null, page - 1);
+    const handleNextPage = () => onPageChange(null, page + 1);
+
+    return (
+        <Box sx={{ flexShrink: 0, ml: 2.5 }}>
+            <IconButton onClick={handleFirstPage} disabled={page === 0}>
+                <FirstPage />
+            </IconButton>
+            <IconButton onClick={handlePrevPage} disabled={page === 0}>
+                <KeyboardArrowLeft />
+            </IconButton>
+            <IconButton onClick={handleNextPage} disabled={page >= Math.ceil(count / rowsPerPage) - 1}>
+                <KeyboardArrowRight />
+            </IconButton>
+            <IconButton onClick={handleLastPage} disabled={page >= Math.ceil(count / rowsPerPage) - 1}>
+                <LastPage />
+            </IconButton>
+        </Box>
+    );
+};
 
 const EventsRegistrants = ({uploaded, modalStyle}) => {
     const { id } = useParams();
@@ -82,9 +108,10 @@ const EventsRegistrants = ({uploaded, modalStyle}) => {
     const handleDownloadCSV = async () => {
         try {
             setIsDownloadingList(true);
-            const response = await apiClient.get(`/api/registrants?event_id=${id}&per_page=2042`);
-            const { data } = response.data.registrants;
-    
+            const response = await apiClient.get(`/api/registrants/download-csv?eventId=${id}`);
+            
+            const data = response.data.registrants;
+            // console.log(data)
             if (!data || data.length === 0) {
                 console.warn("No registrants found.");
                 return;
@@ -92,7 +119,7 @@ const EventsRegistrants = ({uploaded, modalStyle}) => {
     
             // Convert data to CSV format
             const csv = Papa.unparse(data, {
-                columns: ["id", "name", "email", "affiliation", "printed", "is_attended"],
+                columns: ["name", "preferred_name", "email", "contact_number", "gender", "social_classification","province", "municipality", "affiliation", "sector", "industry", "ict_council_name", "attendance_qualification", "social_media", "website"],
             });
     
             // Convert CSV string to a Blob
@@ -209,6 +236,7 @@ const EventsRegistrants = ({uploaded, modalStyle}) => {
                             rowsPerPage={rowsPerPage}
                             onRowsPerPageChange={handleChangeRowsPerPage}
                             rowsPerPageOptions={[50]}
+                            ActionsComponent={TablePaginationActions}
                         />
                     </>
                 ) : (
